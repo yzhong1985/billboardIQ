@@ -1,2 +1,2 @@
-# Billboards-clever
+# BillboardIQ
 yzhong's BillboardIQ demo
