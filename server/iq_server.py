@@ -1,13 +1,15 @@
+import os
 from flask import Flask, jsonify, request
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for the entire app
 
 # Setup the Flask-JWT-Extended extension
 app.config["JWT_SECRET_KEY"] = "c955f7202fd44c5db84464af36551727"  # set a key
 
 jwt = JWTManager(app)
-
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -41,6 +43,22 @@ def get_data():
         "occupation": "Engineer"
     }
     return jsonify(data)
+
+
+# Define the route for fetching GeoJSON data
+@app.route('/api/geojson', methods=['GET'])
+def get_geojson_data():
+    try:
+        # Get the absolute path to the GeoJSON file
+        file_path = os.path.join(os.path.dirname(__file__), 'data', 'sample.geojson')
+        with open(file_path, 'r') as file:
+            geojson_data = file.read()
+            return jsonify(geojson_data)
+    except FileNotFoundError:
+        return jsonify({"error": "GeoJSON file not found."}), 404
+
+
+
 
 
 if __name__ == '__main__':
