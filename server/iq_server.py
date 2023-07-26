@@ -1,15 +1,19 @@
 import os
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
 from flask import Flask, jsonify, request
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for the entire app
+jwt = JWTManager(app)
+CORS(app, origins=['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3000/login'])  # Enable CORS for the entire app
 
 # Setup the Flask-JWT-Extended extension
 app.config["JWT_SECRET_KEY"] = "c955f7202fd44c5db84464af36551727"  # set a key
-
-jwt = JWTManager(app)
+CLIENT_ID = '273471213430-2vufnmj5gfuok2hseihdl0cjcf391ev5.apps.googleusercontent.com' 
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -57,9 +61,71 @@ def get_geojson_data():
     except FileNotFoundError:
         return jsonify({"error": "GeoJSON file not found."}), 404
 
+@app.route('/api/billboards', methods=['POST'])
+def get_billboards():
+    try:
+        # Get the parameters from the request body
+        data = request.get_json()
+        file_path = data.get('file_path')
+        method = data.get('method')
 
+        if not file_path or not mode:
+            return jsonify({"error": "Invalid request parameters."}), 400
 
+        # Construct the absolute file path to the GeoJSON file
+        file_path = os.path.join(os.getcwd(), file_path)
+        
+        with open(file_path, 'r') as file:
+            geojson_data = file.read()
+            # Process the mode parameter based on your needs
+            if mode == 1:
+                # Process data in mode 1
+                processed_data = process_mode_one(geojson_data)
+                return jsonify(processed_data)
+            elif mode == 2:
+                # Process data in mode 2
+                processed_data = process_mode_two(geojson_data)
+                return jsonify(processed_data)
+            else:
+                return jsonify({"error": "Invalid mode parameter."}), 400
 
+    except FileNotFoundError:
+        return jsonify({"error": "GeoJSON file not found."}), 404
+
+# test post
+@app.route('/posttest', methods=['POST'])
+def post_test():
+    try:
+        print(f"1")
+        data = request.json
+        name = data.get('name', '')
+        email = data.get('email', '')
+        token = data.get('token', '')
+        print(f"Received data - Name: {name}, Email: {email}")
+        print("Token:" + token)
+        return {"message": "Data received successfully!"}
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify({'error': 'test'}), 400
+
+# Use google token to verify
+@app.route('/tokensignin', methods=['POST'])
+def token_sign_in():
+    try:
+        data = request.json
+        token = data.get('token', '')
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+        userid = idinfo['sub']
+        email = idinfo['email']
+        picture = idinfo['picture']
+        given_name = idinfo['given_name']
+        family_name = idinfo['family_name']
+        access_token = create_access_token(identity=userid)
+        # print("access_token: " + access_token)
+        return { "message": "Success", "email" : email, "given_name" : given_name, "family_name" : family_name, "picture" : picture, "access_token" : access_token }
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return {"err": "err from server"}
 
 if __name__ == '__main__':
     app.run(debug=True)

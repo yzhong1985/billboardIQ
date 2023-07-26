@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, GeoJSON } from 'react-leaflet';
+import Sidebar from './Sidebar';
 import L from 'leaflet';
-
 import 'leaflet/dist/leaflet.css';
 import '../styles/main.css';
-import Sidebar from './Sidebar';
 
-// for map's basic settings
+// for map's basic settings 
 const ChangeView = ({ center }) => {
   const map = useMap();
   map.setView(center);
   return null;
 }
 
-function MapComponent() {
+// the main component for displaying and interacting with the leaflet map
+function MapComponent({ onLogout }) {
 
     const lat = 33.486402;
     const lng = -112.099639;
@@ -61,7 +61,7 @@ function MapComponent() {
 
     return (
         <div style={{ height: "100vh", width: "100%" }}>
-            <Sidebar />
+            <Sidebar onLogout={onLogout} />
             <MapContainer center={center} zoom={zoom_level} style={{ height: "100%", width: "100%" }}>
                 <ChangeView center={center} />
                 <TileLayer

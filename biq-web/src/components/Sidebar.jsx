@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import BillboardSettings from './BillboardSettings';
+import { googleLogout } from '@react-oauth/google';
 
 import { AiOutlineMenu, AiFillDatabase, AiFillBulb, AiFillSignal, AiTwotoneSetting, AiOutlineCloseCircle } from 'react-icons/ai';
 import { IoLayersSharp } from "react-icons/io5";
 
-function Sidebar() {
+function Sidebar({ onLogout }) {
     
     const [activeItem, setActiveItem] = useState(null);
 
@@ -33,6 +34,40 @@ function Sidebar() {
         }
         setActiveItem(null);
     }
+
+    const handleLogout = () => {
+        handleMenuClose();
+        googleLogout();
+        onLogout();
+    }
+
+    const fetchData = async () => {
+        try {
+          const response = await fetch('http://localhost:5000/api/geojson'); // Replace with your actual API endpoint
+          const data = await response.json();
+          console.log(data);
+        
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+    }
+
+    const postData = async () => {
+        try {
+          const response = await fetch('http://localhost:5000/posttest', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: 'abc', email: 'abc@gmail.com' }),
+          });
+          const data = await response.json();
+          console.log(data);
+        } catch (error) {
+          console.error('Error posting data:', error);
+        }
+      };
+
 
     return (
         <>
@@ -103,11 +138,19 @@ function Sidebar() {
 
                         quaerat magni dolores iure odit? Id labore eveniet eligendi
                         voluptatibus. Repellat, assumenda!!!
+
                     </div>
                     </div>
                     <div className={`item-content ${activeItem === 'settings' ? 'active' : ''}`} id="settings">
                     <h2>Settings</h2>
-                    <div className="content">settings</div>
+                    <div className="content">
+                        <button onClick={handleLogout}>logout</button>
+
+                        <button onClick={fetchData}>GET request</button>
+
+                        <button onClick={postData}>Send User Data (POST)</button>
+                    </div>
+                        
                     </div>
                 </div>
             </div>
