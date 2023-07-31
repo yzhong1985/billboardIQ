@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import LoginPage from './pages/LoginPage';
 import MainPage from './pages/MainPage';
 
@@ -38,6 +39,9 @@ function App() {
 
   return (
     <Router>
+      <Helmet>
+      <title>Billboard IQ - find the right borads for you</title>
+      </Helmet>
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/main" /> : <LoginPage onLogin={handleLogin} />} />
         <Route path="/main" element={user ? <MainPage onLogout={handleLogout} /> : <Navigate to="/login" />} />
