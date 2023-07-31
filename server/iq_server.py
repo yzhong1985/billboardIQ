@@ -1,8 +1,6 @@
 import os
-
 from google.oauth2 import id_token
 from google.auth.transport import requests
-
 from flask import Flask, jsonify, request
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from flask_cors import CORS, cross_origin
