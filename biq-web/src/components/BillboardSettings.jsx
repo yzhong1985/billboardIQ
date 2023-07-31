@@ -55,9 +55,20 @@ function BillboardSettings() {
               id="radius" 
               type="number" 
               min="1" 
-              max="10000" 
+              max="10000"
+              step="500" 
               value={radius} 
               onChange={(e) => setRadius(e.target.value)}
+            />
+          </div>
+
+          <div className='billboard-settings-label'>
+            <label htmlFor="budget">Total Budget:($/mo)</label>
+            <input 
+              id="budgetm" 
+              type="number" 
+              min="1000" 
+              max="1000000" 
             />
           </div>
     

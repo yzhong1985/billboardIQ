@@ -12,10 +12,11 @@ import multiprocessing as mp
 import geopandas as gpd
 
 ## import gurobi python library
-from gurobipy import *
+import gurobipy as gp
 import time
 
-
+# return a binary (only contain 0 or 1) array  
+# the array [a, b] indicates if the point y[b] is within the r distance of x[a] 
 def distance_matrix_binary(x, y, r):
     x = np.asarray(x)
     y = np.asarray(y)
@@ -42,159 +43,185 @@ def distance_matrix_binary(x, y, r):
             mat[idx[i], i] = 1
         return mat
 
-
-def generate_candidate_sites(sites, M=100, heuristic = None):
+# random select m sites from the given site, if m is not provided, return all the sites
+def generate_candidate_sites(sites, M=100):
     '''
     Generate M candidate sites with the convex hull of a point set
     Input:
         sites: a Pandas DataFrame with X, Y and other characteristic
         M: the number of candidate sites to generate
-        heuristic: 
     Return:
         sites: a Numpy array with shape of (M,2)
     '''
     if M is not None:
         if M > len(sites):
             M = None
-    if heuristic is None or heuristic == '':
-        if M is None:
-            return sites
-        index = np.random.choice(len(sites), M)
-        return sites.iloc[index]
-    elif heuristic == 'coverage':
-        sites = sites.sort_values(by='pop_covered_2km', ascending=False).reset_index()
-        if M is None:
-            return sites
-        return sites.iloc[:M]
-    elif heuristic == 'coverage_e':
-        sites = sites.sort_values(by='pop_covered_2km_exclusive', ascending=False).reset_index()
-        if M is None:
-            return sites
-        return sites.iloc[:M]
-    elif heuristic == 'impression':
-        sites = sites.sort_values(by='weeklyImpr', ascending=False).reset_index()
-        if M is None:
-            return sites
-        return sites.iloc[:M]
-    elif heuristic == 'impression_e':
-        sites = sites.sort_values(by='weeklyImpr_2km_exclusive', ascending=False).reset_index()
-        if M is None:
-            return sites
-        return sites.iloc[:M]
-
-
-def mclp_gurobi(ls, bbs, current_bbs, K, radius, M, heuristic=''):
-    """
-    Solve maximum covering location problem
-    Input:
-        ls: landscan dataset, Pandas DataFrame
-        K: the number of sites to select
-        radius: the radius of circle
-        M: the number of candidate sites
-    Return:
-        opt_sites: locations K optimal sites, Numpy array in shape of [K,2]
-        f: the optimal value of the objective function
-    """
-
-    """
-    print('----- Configurations -----')
-    print('Number of points %g' % len(ls))
-    print('Number of billboards %g' % len(bbs))
-    print('Number of current billboards %g' % len(current_bbs))
-    print('Number of selected billboards - K %g' % K)
-    print('Billboard coverage Radius %g (Meter)' % radius)
-    print('Number of candidate billboard sampled - M %g' % M)
-    """
-
-    bbs_ = generate_candidate_sites(bbs, M, heuristic)
-
-    value_field = 'at_revco'
-    ls['easting'] = ls.geometry.x
-    ls['northing'] = ls.geometry.y
+    if M is None:
+        return sites
     
+    index = np.random.choice(len(sites), M)
+    return sites.iloc[index]        
+    
+# the old methods (deprecated) -- testing now
+def mclp_landscan_ex_gurobi(ls, bbs, current_bbs, value_field, K, radius, M, pricingfield, budget):
+    
+    bbs_ = generate_candidate_sites(bbs, M)
     current_bbs = pd.DataFrame(current_bbs, columns=['POINT_X','POINT_Y'])
     current_bbs['current'] = True
     bbs_.loc['current'] = False
     bbs = current_bbs.append(bbs_, ignore_index=True, verify_integrity=True)
     bbs = bbs.reset_index()
-
     J = len(bbs)  # indexing for facility sites
     I = len(ls)  # indexing for population (clients)
     D = distance_matrix_binary(ls[['easting', 'northing']].values, bbs[['POINT_X', 'POINT_Y']].values, radius)
 
+    cost = bbs[pricingfield]
+
     pop = ls[value_field]
-    start = time.time()
-
     # Build model
-    m = Model()
-
+    m = gp.Model()
     # Add variables
     x = {}
     y = {}
-
     current = len(current_bbs)
 
     for i in range(I):
-        y[i] = m.addVar(vtype=GRB.BINARY, name='y%d' % i)
+        y[i] = m.addVar(vtype=gp.GRB.BINARY, name='y%d' % i)
 
     for j in range(J):
-        x[j] = m.addVar(vtype=GRB.BINARY, name='x%d' % j)
+        x[j] = m.addVar(vtype=gp.GRB.BINARY, name='x%d' % j)
 
     m.update()
 
     # Add constraints
-    m.addConstr(quicksum(x[j] for j in range(J)) == K)
+    m.addConstr(gp.quicksum(x[j] for j in range(J)) <= K)
+
+    if budget > 0:
+        m.addConstr(gp.quicksum(x[j]*cost[j] for j in range(J)) <= budget, "budget")
 
     for j in range(current):
         m.addConstr(x[j] == 1)
 
     for i in range(I):
-        m.addConstr(quicksum(x[j] for j in np.where(D[i] == 1)[0])
-                    >= y[i])
+        m.addConstr(gp.quicksum(x[j] for j in np.where(D[i] == 1)[0]) >= y[i])
 
-    m.setObjective(quicksum(y[i] * pop[i] for i in range(I)),
-                   GRB.MAXIMIZE)
-
+    m.setObjective(gp.quicksum(y[i] * pop[i] for i in range(I)), gp.GRB.MAXIMIZE)
     m.setParam('OutputFlag', 0)
     m.optimize()
-    end = time.time()
-
-    """
-    # print('----- Output -----')
-    print('  Running time : %s seconds' % float(end-start))
-    print('  Optimal coverage points: %g' % m.objVal)
-    """
 
     solution = []
-    if m.status == GRB.Status.OPTIMAL:
+    if m.status == gp.GRB.Status.OPTIMAL:
         for v in m.getVars():
             if v.x == 1 and v.varName[0] == 'x':
                 solution.append(int(v.varName[1:]))
 
     opt_bbs = bbs.iloc[solution]
+
     return (opt_bbs, m.objVal)
 
 
-def get_result(demand_filepath, bb_filepath):
-    ls = gpd.read_file(demand_filepath)
-    sitedf = pd.read_csv(bb_filepath)
-    sites = np.array(sitedf[['POINT_X', 'POINT_Y']], dtype=np.float64)
+# I and J are the number of demand points and potential facility locations, 
+# The s parameter is a dictionary that indicates whether a demand point i is within the service range of location j
+# The c parameter is the maximum number of facilities that can be opened.
+# v representing the value associated with each demand point. 
+# budget = 0 means no budget limit
+def solve_mclp(I, J, s, max_count, cost, budget, v, opened):
+    # Create a new model
+    m = gp.Model("mclp")
 
-    K = 30
+    # Create variables
+    x = m.addVars(J, vtype=gp.GRB.BINARY, name="x")
+    y = m.addVars(I, vtype=gp.GRB.BINARY, name="y")
 
-    # Service radius of each site
-    radius = 3000
+    # Fix variables for already opened facilities
+    for j in opened:
+        x[j].setAttr('lb', 1)
 
-    # Heuristic
-    heuristic = ''
+    # Set objective
+    m.setObjective(gp.quicksum(v[i]*y[i] for i in range(I)), gp.GRB.MAXIMIZE)
 
-    # Candidate site size (random sites generated)
-    M = len(ls)
+    # Add coverage constraints
+    m.addConstrs((gp.quicksum(s[i,j]*x[j] for j in range(J)) >= y[i] for i in range(I)), "coverage")
 
-    current_sites = []
-    # Run mclp opt_sites is the location of optimal sites and f is the points covered
-    opt_sites, n_coverage = mclp_gurobi(ls, sitedf, current_sites, K, radius, M, heuristic)
+    # Add service limit constraint
+    m.addConstr(gp.quicksum(x[j] for j in range(J)) <= max_count, "facilities")
 
-    jsonStr = opt_sites[['index','lat','long','heading','productTyp','weeklyImpr']].to_json()
-    print(jsonStr)
+    # Add budget constraint
+    if budget > 0:
+        m.addConstr(gp.quicksum(x[j]*cost[j] for j in range(J)) <= budget, "budget")
+
+    # Optimize model
+    m.optimize()
     
+    decision_vars = {v.VarName: v.x for v in m.getVars()}
+    objective_value = m.objVal
+
+    return decision_vars, objective_value
+
+
+# the actual function to solve the result
+def solve_result(demand_filepath, bb_filepath, radius, max_count, cost_field, budget, value_field, opened):
+    # read from demand file and facilities file
+    demand_ls = gpd.read_file(demand_filepath)
+    billboards_ls = pd.read_csv(bb_filepath)
+    demand_ls['easting'] = demand_ls.geometry.x
+    demand_ls['northing'] = demand_ls.geometry.y
+    I = len(demand_ls)
+    J = len(billboards_ls)
+    s = distance_matrix_binary(demand_ls[['easting', 'northing']].values, billboards_ls[['POINT_X', 'POINT_Y']].values, radius)
+    # pricing of the billboard array
+    cost = billboards_ls[cost_field]
+    # value of the demand pts array
+    v = demand_ls[value_field]
+    # Run mclp opt_sites is the location of optimal sites and f is the points covered
+    opt_sites, total_covered = solve_mclp(I, J, s, max_count, cost, budget, v, opened)
+    return opt_sites, total_covered
+
+
+# the old function to solve the result
+def solve_result_old(demand_filepath, bb_filepath, radius, max_count, cost_field, budget, value_field, opened):
+    # read from demand file and facilities file
+    demand_ls = gpd.read_file(demand_filepath)
+    billboards_ls = pd.read_csv(bb_filepath)
+    demand_ls['easting'] = demand_ls.geometry.x
+    demand_ls['northing'] = demand_ls.geometry.y
+    I = len(demand_ls)
+    J = len(billboards_ls)
+    s = distance_matrix_binary(demand_ls[['easting', 'northing']].values, billboards_ls[['POINT_X', 'POINT_Y']].values, radius)
+    # pricing of the billboard array
+    cost = billboards_ls[cost_field]
+    # value of the demand pts array
+    v = demand_ls[value_field]
+    # Run mclp opt_sites is the location of optimal sites and f is the points covered
+
+    opt_sites, total_covered = mclp_landscan_ex_gurobi(demand_ls, billboards_ls, [], value_field, max_count, radius, None, cost_field, budget)
+
+    # opt_sites, total_covered = solve_mclp(I, J, s, max_count, cost, budget, v, opened)
+    return opt_sites, total_covered
+
+
+def run_tester():
+    # Number of demand points and potential facility locations
+    I = 5
+    J = 3
+    # Coverage matrix (s[i, j] = 1 if demand point i is within the service range of location j)
+    s = np.array([[1, 0, 0],
+                [1, 1, 0],
+                [0, 1, 1],
+                [0, 0, 1],
+                [0, 1, 0]])
+    max_count = 2  # Maximum number of facilities that can be opened
+    # Costs associated with each facility
+    cost = np.array([100, 200, 150])
+    # Total budget
+    budget = 300
+    # Value associated with each demand point
+    v = np.array([10, 20, 30, 40, 50])
+    # Already opened facilities
+    opened = [1]  # Facility 2 is already opened (index starts from 0) - the indexes array of the opened facilities say 1 and 3 open, then we need to pass [0,2]
+    decision_vars, objective_value = solve_mclp(I, J, s, max_count, cost, budget, v, opened)
+    return decision_vars, objective_value
+
+    
+
+
