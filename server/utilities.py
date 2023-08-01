@@ -49,7 +49,8 @@ def solve_result(demand_filepath, bb_filepath, radius, max_count, cost_field, bu
     # Run mclp opt_sites is the location of optimal sites and f is the points covered
     # opt_billboards, total_covered_val = methods.mclp_gurobi.solve_mclp(I, J, s, max_count, cost, budget, v, opened)
     # opt_billboards, total_covered_val = methods.mclp_ortools.solve_mclp(I, J, s, max_count, cost, budget, v, opened)
-    opt_billboards, total_covered_val = methods.mclp_cplex.solve_mclp(I, J, s, max_count, cost, budget, v, opened)
+    # opt_billboards, total_covered_val = methods.mclp_cplex.solve_mclp(I, J, s, max_count, cost, budget, v, opened)
+    opt_billboards, total_covered_val = methods.mclp_ga_muticore.solve_mclp_wprogress(I, J, s, max_count, cost, budget, v, opened)
     billboards = billboards_ls.iloc[opt_billboards]
 
     return billboards, total_covered_val

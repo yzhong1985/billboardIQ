@@ -2,18 +2,37 @@ import numpy as np
 from docplex.mp.model import Model
 from docplex.util.status import JobSolveStatus
  
-# I - the number of the total demand points
-# J - the number of the potential facility locations 
-# D - The D parameter is a dictionary that indicates whether a demand point i is within the service range of location j
-# max_count - the maximum number of facilities that can be opened.
-# cost - a list contains each facilities cost to open e.g. cost[n] represents the opening cost for facility index at n
-# budget - the maximum budget for open facilities Note: budget = 0 means the budget is unlimited  
-# v - a list contains each demand point's value e.g. v[n] represents the value for demand point index at n 
-# opened - a list that contains the index of the facilities that are already opened 
-# e.g. opened = [0, 10, 25] means faclity 0, 10, and 25 are already opened and they need to be included within solution 
-# Return:
-#        sites: a Numpy array with shape of (M,2)
 def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
+    """
+    The method uses IBM's docplex to solve MCLP, 
+    IBM ILOG CPLEX Optimization Studio needs to be installed on the pc
+    Note that as for today (2023.08.01), the software only support up to python 3.10,
+    if python 3.11 or above is installed, please consult IBM for cplex python api installation 
+    after the studio is installed, run python setup.py install file in the install folder\python\ 
+    then the api can be called by using docplex package (will be installed with the setup.py script)
+
+    Args:
+        I (int): the number of the total demand points
+        J (int): the number of the potential facility locations 
+        D (array): the array [I, J], it indicates whether a demand point i is within 
+            the service range of location j
+        max_count (int): the maximum number of facilities that can be opened.
+        cost (list): a list contains each facilities cost to open 
+            e.g. cost[n] represents the opening cost for facility index at n
+        budget (int): the maximum budget for open facilities 
+            note: budget = 0 means the budget is unlimited  
+        v (list): a list contains each demand point's value 
+            e.g. v[n] represents the value for demand point index at n 
+        opened (list): a list that contains the indexes of the facilities that are 
+            already opened e.g. opened = [0, 10, 25] means faclity 0, 10, and 25 are 
+            already opened and they need to be included within solution 
+
+    Returns:
+        tuple: A tuple containing a list and a value 
+            a list contains all the indexes of the selected facilities  
+            a numerical value shows the final objective value being covered
+    """
+
     # Create a new model
     m = Model(name='MCLP')
 

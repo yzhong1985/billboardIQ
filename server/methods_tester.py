@@ -11,7 +11,7 @@ def main():
     bb_file_path = os.path.join(data_folder, bb_file_name)
 
     #return solve_result_old(demand_file_path, bb_file_path, 3000, 30, "pricingEstPerMo", 20000, 'at_revco', [])
-    return solve_result(demand_file_path, bb_file_path, 3000, 20, "pricingEstPerMo", 30000, 'at_revco', [10,150])
+    return solve_result(demand_file_path, bb_file_path, 3000, 20, "pricingEstPerMo", 40000, 'at_revco', [10,150])
 
 if __name__ == "__main__":
     # Record the start time
