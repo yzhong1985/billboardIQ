@@ -1,5 +1,5 @@
 import numpy as np
-import gurobipy as gp
+from ortools.linear_solver import pywraplp as ort
  
 # I - the number of the total demand points
 # J - the number of the potential facility locations 
@@ -13,56 +13,51 @@ import gurobipy as gp
 # Return:
 #        sites: a Numpy array with shape of (M,2)
 def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
-
     # create a new model
-    m = gp.Model("mclp_solver")
+    solver = ort.Solver.CreateSolver('SCIP')
 
     # add variables
     x = {}
     y = {}
 
     for i in range(I):
-        y[i] = m.addVar(vtype=gp.GRB.BINARY, name='y%d' % i)
-
+        y[i] = solver.IntVar(0.0, 1.0, 'y%d' % i)
     for j in range(J):
-        x[j] = m.addVar(vtype=gp.GRB.BINARY, name='x%d' % j)
+        x[j] = solver.IntVar(0.0, 1.0, 'x%d' % j)
 
-    # add constraints for max facilities count
-    m.addConstr(gp.quicksum(x[j] for j in range(J)) <= max_count)
+
+    # Add constraints for max facilities count
+    solver.Add(solver.Sum([x[j] for j in range(J)]) <= max_count)
 
     # facilities that are already opened
     for j in opened:
-        m.addConstr(x[j] == 1)
+        solver.Add(x[j] == 1)
 
     # the distance coverage constraints
     for i in range(I):
-        m.addConstr(gp.quicksum(x[j] for j in np.where(D[i] == 1)[0]) >= y[i])
+        solver.Add(solver.Sum(x[j] for j in np.where(D[i] == 1)[0]) >= y[i])
 
     # the budget coverage constraint
     if budget > 0:
-        m.addConstr(gp.quicksum(x[j] * cost[j] for j in range(J)) <= budget)
+        solver.Add(solver.Sum(x[j] * cost[j] for j in range(J)) <= budget)
 
-    m.setObjective(gp.quicksum(y[i] * v[i] for i in range(I)), gp.GRB.MAXIMIZE)
- 
-    # Optimize model
-    m.optimize()
+    # Set objective
+    solver.Maximize(solver.Sum(y[i] * v[i] for i in range(I)))
+
+    # Solve the model
+    status = solver.Solve()
+
     solution = []
-    if m.status == gp.GRB.Status.OPTIMAL:
-        for v in m.getVars():
-            if v.x == 1 and v.varName[0] == 'x':
-                solution.append(int(v.varName[1:]))
-
-    return (solution, m.objVal)
+    if status == ort.Solver.OPTIMAL:
+        for j in range(J):
+            if x[j].solution_value() == 1:
+                solution.append(j)
+        
+        return (solution, solver.Objective().Value())
+    else:
+        print('Solution not found.')
+        return None
     
 
-def printTypes(I, J, D, max_count, cost, budget, v, opened):
-    print("I - " + str(type(I)))
-    print("J - " + str(type(J)))
-    print("D - " + str(type(D)))
-    print("max_count - " + str(type(max_count)))
-    print("cost - " + str(type(cost)))
-    print("budget - " + str(type(budget)))
-    print("v - " + str(type(v)))
-    print("opened - " + str(type(opened)))
-    return
+
 
