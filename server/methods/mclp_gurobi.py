@@ -51,8 +51,11 @@ def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
         for v in m.getVars():
             if v.x == 1 and v.varName[0] == 'x':
                 solution.append(int(v.varName[1:]))
-
-    return (solution, m.objVal)
+        return (solution, m.objVal)
+    else:
+        print('Solution not found.')
+        return None
+    
     
 
 def printTypes(I, J, D, max_count, cost, budget, v, opened):
