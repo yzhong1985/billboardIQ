@@ -10,8 +10,6 @@ from ortools.linear_solver import pywraplp as ort
 # v - a list contains each demand point's value e.g. v[n] represents the value for demand point index at n 
 # opened - a list that contains the index of the facilities that are already opened 
 # e.g. opened = [0, 10, 25] means faclity 0, 10, and 25 are already opened and they need to be included within solution 
-# Return:
-#        sites: a Numpy array with shape of (M,2)
 def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
     # create a new model
     solver = ort.Solver.CreateSolver('SCIP')

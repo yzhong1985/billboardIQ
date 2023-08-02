@@ -1,2 +1,4 @@
 
 biq-web/GoogleAuth/client_secret.json
+*.pyc
+__pycache__/
