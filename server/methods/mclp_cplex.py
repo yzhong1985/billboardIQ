@@ -4,12 +4,11 @@ from docplex.util.status import JobSolveStatus
  
 def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
     """
-    The method uses IBM's docplex to solve MCLP, 
-    IBM ILOG CPLEX Optimization Studio needs to be installed on the pc
-    Note that as for today (2023.08.01), the software only support up to python 3.10,
-    if python 3.11 or above is installed, please consult IBM for cplex python api installation 
-    after the studio is installed, run python setup.py install file in the install folder\python\ 
-    then the api can be called by using docplex package (will be installed with the setup.py script)
+    To use this method, IBM ILOG CPLEX Optimization Studio must be installed on the computer.
+    Keep in mind that the software only supports Python 3.10 as of right now (2023.08.01),
+    Please consult IBM for instructions on installing the Cplex Python API if Python 3.11 or above is installed. 
+    Run the Python setup.py install file in the install folder once the studio has been installed. 
+    then the docplex package can be used to access the API (which will be installed by the setup.py script).
 
     Args:
         I (int): the number of the total demand points
@@ -17,20 +16,20 @@ def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
         D (array): the array [I, J], it indicates whether a demand point i is within 
             the service range of location j
         max_count (int): the maximum number of facilities that can be opened.
-        cost (list): a list contains each facilities cost to open 
+        cost (list): a list contains each facility's opening costs
             e.g. cost[n] represents the opening cost for facility index at n
         budget (int): the maximum budget for open facilities 
             note: budget = 0 means the budget is unlimited  
         v (list): a list contains each demand point's value 
             e.g. v[n] represents the value for demand point index at n 
-        opened (list): a list that contains the indexes of the facilities that are 
-            already opened e.g. opened = [0, 10, 25] means faclity 0, 10, and 25 are 
-            already opened and they need to be included within solution 
+        opened (list): a list that comprises the indexes of the existing facilities
+            e.g. opened = [0, 10, 25] indicates that facilities 0, 10, and 25 are already 
+            open and must be included inside the solution. 
 
     Returns:
         tuple: A tuple containing a list and a value 
-            a list contains all the indexes of the selected facilities  
-            a numerical value shows the final objective value being covered
+            a list containing all of the indexes of the selected facilities   
+            A numerical number represents the final objective value covered
     """
 
     # Create a new model
@@ -61,7 +60,6 @@ def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
     # solve the model
     solution = []
     m.solve()
-
 
     if m.get_solve_status() == JobSolveStatus.OPTIMAL_SOLUTION:
         for j in range(J):

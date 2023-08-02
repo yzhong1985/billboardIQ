@@ -1,16 +1,37 @@
 import numpy as np
 import gurobipy as gp
  
-# I - the number of the total demand points
-# J - the number of the potential facility locations 
-# D - The D parameter is a dictionary that indicates whether a demand point i is within the service range of location j
-# max_count - the maximum number of facilities that can be opened.
-# cost - a list contains each facilities cost to open e.g. cost[n] represents the opening cost for facility index at n
-# budget - the maximum budget for open facilities Note: budget = 0 means the budget is unlimited  
-# v - a list contains each demand point's value e.g. v[n] represents the value for demand point index at n 
-# opened - a list that contains the index of the facilities that are already opened 
-# e.g. opened = [0, 10, 25] means faclity 0, 10, and 25 are already opened and they need to be included within solution 
 def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
+    """
+    The method makes use of the Gurobi Optimizer to solve the maximal covering location problem (MCLP). 
+    The MCLP can be transformed into a mixed-integer linear programming (MILP) problem, which can be 
+    effectively solved using Solvers. 
+    
+    Gurobipy must be installed in order to use this method. To install, use the command line to execute 
+    'pip install gurobipy'. gurobipy must be activated with a license. The free Acdemic license can be 
+    obtained from Gurobi's website, please follow the activation instructions provided on their website.
+    
+    Args:
+        I (int): the number of the total demand points
+        J (int): the number of the potential facility locations 
+        D (array): the array [I, J], it indicates whether a demand point i is within 
+            the service range of location j
+        max_count (int): the maximum number of facilities that can be opened.
+        cost (list): a list contains each facility's opening costs
+            e.g. cost[n] represents the opening cost for facility index at n
+        budget (int): the maximum budget for open facilities 
+            note: budget = 0 means the budget is unlimited  
+        v (list): a list contains each demand point's value 
+            e.g. v[n] represents the value for demand point index at n 
+        opened (list): a list that comprises the indexes of the existing facilities
+            e.g. opened = [0, 10, 25] indicates that facilities 0, 10, and 25 are already 
+            open and must be included inside the solution. 
+
+    Returns:
+        tuple: A tuple containing a list and a value 
+            a list containing all of the indexes of the selected facilities   
+            A numerical number represents the final objective value covered
+    """
 
     # create a new model
     m = gp.Model("mclp_solver")
@@ -54,16 +75,4 @@ def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
         print('Solution not found.')
         return None
     
-    
-
-def printTypes(I, J, D, max_count, cost, budget, v, opened):
-    print("I - " + str(type(I)))
-    print("J - " + str(type(J)))
-    print("D - " + str(type(D)))
-    print("max_count - " + str(type(max_count)))
-    print("cost - " + str(type(cost)))
-    print("budget - " + str(type(budget)))
-    print("v - " + str(type(v)))
-    print("opened - " + str(type(opened)))
-    return
 
