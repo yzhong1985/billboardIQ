@@ -1,12 +1,7 @@
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-from sklearn.neighbors import KDTree
-
 import importlib
-import solver as svr
-import heuristic as heu
-
 
 # the actual function to solve the result
 def get_optimal_billboards(demand_filepath, bb_filepath, radius, max_count, cost_field, budget, value_field, opened, method_module):
@@ -14,18 +9,20 @@ def get_optimal_billboards(demand_filepath, bb_filepath, radius, max_count, cost
         # read from demand file and facilities file
         demand_ls = gpd.read_file(demand_filepath)
         billboards_ls = pd.read_csv(bb_filepath)
+
         demand_ls['easting'] = demand_ls.geometry.x
         demand_ls['northing'] = demand_ls.geometry.y
         I = len(demand_ls)
         J = len(billboards_ls)
         demand_pts = np.asarray(demand_ls[['easting', 'northing']].values)
         facility_pts = np.asarray(billboards_ls[['POINT_X', 'POINT_Y']].values)
-        s = calculate_coverage_matrix(demand_pts, facility_pts, radius)
+        s = cal_coverage_matrix(demand_pts, facility_pts, radius)
         # pricing array of the billboard
         cost = billboards_ls[cost_field]
         # demand value array of the demand pts
-        v = demand_ls[value_field]
-
+        #v = demand_ls[value_field]
+        field_array = [(value_field, 1)]
+        v = cal_demand_series(demand_ls, field_array)
         mclp_module = importlib.import_module(method_module)
 
         opt_billboards, total_covered_val = mclp_module.solve_mclp(I, J, s, max_count, cost, budget, v, opened)
@@ -43,8 +40,7 @@ def get_optimal_billboards(demand_filepath, bb_filepath, radius, max_count, cost
         print("An error occurred: ", e)
         return None
 
-
-def calculate_coverage_matrix(demand_pts, facility_pts, facility_radius):
+def cal_coverage_matrix(demand_pts, facility_pts, facility_radius):
     """
     Calculate the coverage of each demand point by each facility point.
 
@@ -78,29 +74,42 @@ def calculate_coverage_matrix(demand_pts, facility_pts, facility_radius):
     # Since the requirement is for an [N, M] array, transpose the result
     return coverage.T
 
+def cal_demand_series(df, field_array):
+    """
+    This function calculates the linear combination of specified fields in the dataframe
+    with corresponding coefficients and returns the results as a pandas Series.
 
-def test_radius(demand_filepath, bb_filepath, radius):
+    Parameters:
+    df (pandas.DataFrame): The input dataframe which contains the fields for calculation.
+    field_array (list of tuple): Each tuple contains a string and a numeric value. 
+                                  The string is a field name in 'df' and the numeric value 
+                                  is the coefficient for this field in the calculation.
+
+    Returns:
+    result_series (pandas.Series): The result of the calculation for each row in 'df'.
+                                   Each entry in the series corresponds to a row in 'df',
+                                   and the entry value is the calculation result for this row.
+    """
+    result_series = pd.Series(0, index=df.index) # initialize new series to store the results
+    for field, coefficient in field_array:
+        if field in df.columns:
+            result_series += df[field] * coefficient
+    return result_series
+
+
+# delete after use
+def test():
     try:# read from demand file and facilities file
-        demand_ls = gpd.read_file(demand_filepath)
-        billboards_ls = pd.read_csv(bb_filepath)
-        demand_ls['easting'] = demand_ls.geometry.x
-        demand_ls['northing'] = demand_ls.geometry.y
-        I = len(demand_ls)
-        J = len(billboards_ls)
-        
-        demand_pts = np.asarray(demand_ls[['easting', 'northing']].values)
-        facility_pts = np.asarray(billboards_ls[['POINT_X', 'POINT_Y']].values)
-        #if radius is set value, then generate the numpy array for it
-        facility_radius = np.full(J, radius)
-        s1 = calculate_coverage_matrix(demand_pts, facility_pts, facility_radius)
-        #s2 = distance_matrix_binary(demand_ls[['easting', 'northing']].values, billboards_ls[['POINT_X', 'POINT_Y']].values, radius)
-        
-        #are_equal = np.array_equal(s1, s2)
-        #print(are_equal) 
-        #print (s.shape)
-        #print (f"type: {type(s)}" )
-        #num_true = np.sum(s)
-        #print (num_true)
+        df = pd.DataFrame({
+            'field1': [1, 2, 3],
+            'field2': [4, 5, 6],
+            'field3': [7, 8, 9],
+        })
+
+        field_array = [('field1', 0.1), ('field2', 0.2), ('field3', 0.3)]
+
+        new_series = cal_demand_series(df, field_array)
+        print(new_series)
         return None
     except Exception as e:
         print("An error occurred: ", e)
