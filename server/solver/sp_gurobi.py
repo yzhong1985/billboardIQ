@@ -63,6 +63,7 @@ def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
 
     m.setObjective(gp.quicksum(y[i] * v[i] for i in range(I)), gp.GRB.MAXIMIZE)
  
+    m.setParam('OutputFlag', 0)  # turns off the logging
     # Optimize model
     m.optimize()
     solution = []

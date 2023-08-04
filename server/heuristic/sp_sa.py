@@ -1,11 +1,6 @@
 import numpy as np
 import random
 
-# Constants for the simulated annealing
-initial_temperature = 1000  
-alpha = 0.99
-num_iterations = 1500
-
 def precompute_coverage(D):
     coverage = [set() for _ in range(D.shape[0])]
     for i in range(D.shape[0]):
@@ -24,7 +19,43 @@ def calculate_fitness(selected, D, cost, v, budget, opened, coverage):
     covered_value = sum(v[i] for i in range(len(coverage)) if coverage[i] & selected_set)
     return covered_value, covered_value
 
-def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
+def solve_mclp(I, J, D, max_count, cost, budget, v, opened, initial_temperature=1000, alpha=0.99, num_iterations=1500, showInfo=True):
+    """
+    The method makes use of the Simulated Annealing to solve the maximal covering location problem (MCLP).
+    Simulated Annealing (SA) is a heuristic method used for finding good (not necessarily perfect) 
+    solutions to an optimization problem such as MCLP. Its name comes from a process in metallurgy 
+    called annealing, where a material (like glass or metal) is heated and then slowly cooled to reduce 
+    its defects and increase its strength.
+
+    Args:
+        I (int): the number of the total demand points
+        J (int): the number of the potential facility locations 
+        D (array): the array [I, J], it indicates whether a demand point i is within 
+            the service range of location j
+        max_count (int): the maximum number of facilities that can be opened.
+        cost (list): a list contains each facility's opening costs
+            e.g. cost[n] represents the opening cost for facility index at n
+        budget (int): the maximum budget for open facilities 
+            note: budget = 0 means the budget is unlimited  
+        v (list): a list contains each demand point's value 
+            e.g. v[n] represents the value for demand point index at n 
+        opened (list): a list that comprises the indexes of the existing facilities
+            e.g. opened = [0, 10, 25] indicates that facilities 0, 10, and 25 are already 
+            open and must be included inside the solution. 
+
+    Returns:
+        tuple: A tuple containing a list and a value 
+            a list containing all of the indexes of the selected facilities   
+            A numerical number represents the final objective value covered
+    """
+
+    if showInfo:
+        print("Simulated Annealing (SA) algorithm is used to solve MCLP")
+        print("-- SA parameters --")
+        print(f"initial temperature = {initial_temperature}")
+        print(f"alpha (cooling rate) = {alpha}")
+        print(f"num of iterations = {num_iterations}")
+              
     # Precompute coverage
     coverage = precompute_coverage(D)
 
@@ -57,7 +88,7 @@ def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
             selected = new_selected
 
         # Print progress
-        if iteration % 100 == 0:
+        if (showInfo and iteration % 100 == 0):
             print(f"Iteration {iteration}: current fitness is {old_fitness}")
 
         # Cool down
@@ -66,5 +97,7 @@ def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
     # Calculate final covered value
     _, covered_value = calculate_fitness(selected, D, cost, v, budget, opened, coverage)
 
-    print("Best solution found covers value of", covered_value)
+    if showInfo:
+        print("Best solution found covers value of", covered_value)
+
     return selected, covered_value

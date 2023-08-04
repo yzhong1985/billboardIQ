@@ -13,7 +13,7 @@ def coverage(individual, I, D, cost, budget, v, opened):
     cover = sum(v[i] for i in range(I) if any(D[i][loc] == 1 for loc in individual + opened))
     return (cover,)
 
-def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
+def solve_mclp_multi(I, J, D, max_count, cost, budget, v, opened):
     # Create types
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -145,6 +145,54 @@ def solve_mclp_wprogress(I, J, D, max_count, cost, budget, v, opened):
     # Close the pool and wait for the worker processes to exit
     pool.close()
     pool.join()
+
+    # Return the index of the chosen facilities and the total coverage value
+    return chosen_facilities, total_coverage
+
+def solve_mclp(I, J, D, max_count, cost, budget, v, opened):
+    # Create types
+    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    creator.create("Individual", list, fitness=creator.FitnessMax)
+
+    toolbox = base.Toolbox()
+
+    # Attribute generator
+    toolbox.register("attr_loc", random.randint, 0, J-1)
+
+    # Structure initializers
+    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_loc, n=max_count-len(opened))
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+    # The fitness function
+    def cal_coverage(individual):
+        # Ensure we're under budget
+        total_cost = sum(cost[loc] for loc in individual if loc not in opened)
+        if total_cost > budget:
+            return (-1,)  # over-budget solutions are not preferred
+
+        # Calculate coverage
+        cover = sum(v[i] for i in range(I) if any(D[i][loc] == 1 for loc in individual + opened))
+        return (cover,)
+
+    toolbox.register("evaluate", cal_coverage)
+    toolbox.register("mate", tools.cxTwoPoint)
+    toolbox.register("mutate", tools.mutUniformInt, low=0, up=J-1, indpb=0.05)
+    toolbox.register("select", tools.selTournament, tournsize=3)
+
+    # Set seed
+    random.seed(64)
+
+    # Initialize population
+    pop = toolbox.population(n=50)
+
+    # Track the best individual
+    hof = tools.HallOfFame(1)
+
+    # Run the algorithm
+    pop, log = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=40, halloffame=hof, verbose=False)
+
+    chosen_facilities = hof[0] + opened
+    total_coverage = cal_coverage(chosen_facilities)[0]
 
     # Return the index of the chosen facilities and the total coverage value
     return chosen_facilities, total_coverage
