@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import BillboardSettings from './BillboardSettings';
 import { googleLogout } from '@react-oauth/google';
 
 import { AiOutlineMenu, AiFillDatabase, AiFillBulb, AiFillSignal, AiTwotoneSetting, AiOutlineCloseCircle } from 'react-icons/ai';
 import { IoLayersSharp } from "react-icons/io5";
 
-function Sidebar({ onLogout }) {
+function Sidebar({ onLogout, onSelectBillboards }) {
     
     const [activeItem, setActiveItem] = useState(null);
+    const [showCaseItems, setShowCaseItems] = useState(null);
+
+    useEffect(() => {
+    }, []);
+
 
     const handleItemClick = (item) => {
         
@@ -66,7 +71,21 @@ function Sidebar({ onLogout }) {
         } catch (error) {
           console.error('Error posting data:', error);
         }
-      };
+    };
+
+    const imgUrl1 = 'img/phoenix-bg-1-min.png'; // Replace with your image path
+    const imgUrl2 = 'img/seattle-bg-1-min.png';
+    const divStyle1 = {
+        backgroundImage: `url(${imgUrl1})`,
+        backgroundSize: 'cover',  // This will make sure the image covers the div
+        backgroundRepeat: 'no-repeat'
+    };
+
+    const divStyle2 = {
+        backgroundImage: `url(${imgUrl2})`,
+        backgroundSize: 'cover',  // This will make sure the image covers the div
+        backgroundRepeat: 'no-repeat'
+    };
 
 
     return (
@@ -104,11 +123,14 @@ function Sidebar({ onLogout }) {
                         <p>Introducing BillboardIQ, the ultimate tool for selecting the best billboard locations. </p>
                         <p>Utilizing big data analysis, social media data, and other geodata from the area, our app provides optimal results for maximum coverage. With cutting-edge algorithms and data-driven decision-making, BillboardIQ takes the guesswork out of selecting the perfect location for your billboard advertising.</p>
                     </div>
+                    {/** TEST - delete after use */}
+                    <div className='workspace-wrapper' style={divStyle1}><div className='workspace-name'>Phoenix, AZ</div></div>
+                    <div className='workspace-wrapper' style={divStyle2}><div className='workspace-name'>Seattle, WA</div></div>
                     </div>
                     <div className={`item-content ${activeItem === 'params' ? 'active' : ''}`} id="params">
                     <h2>Set Parameters</h2>
                     <div className="content">
-                        <BillboardSettings />
+                        <BillboardSettings onSelectBillboards={onSelectBillboards} />
                     </div>
                     </div>
                     <div className={`item-content ${activeItem === 'layers' ? 'active' : ''}`} id="layers">

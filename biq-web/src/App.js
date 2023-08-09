@@ -6,9 +6,9 @@ import MainPage from './pages/MainPage';
 
 function App() {
 
-  const [user, setUser] = React.useState(JSON.parse(sessionStorage.getItem('user')) || null);
+  const [user, setUser] = React.useState(JSON.parse(sessionStorage.getItem('userdata')) || null);
 
-  const handleLogin = async (response) => {
+  const onLogin = async (response) => {
     const id_token = response.credential;
     try {
       const result = await fetch('http://localhost:5000/tokensignin', {
@@ -23,17 +23,20 @@ function App() {
         throw new Error('Network response was not ok');
       }
       const data = await result.json();
-      const user_email = data["email"];
-      setUser(user_email);
+      sessionStorage.setItem('userdata', JSON.stringify(data));
+      setUser(JSON.stringify(data));
 
     } catch (error) {
       console.error('Error posting data:', error);
+      const textToDisplay = 'The BIQ server is currently unavailable; please try again later.';
+      sessionStorage.removeItem('userdata');
+      setUser(null);
+      return { error: textToDisplay };
     }
-
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('user');
+  const onLogout = () => {
+    sessionStorage.removeItem('userdata');
     setUser(null);
   };
 
@@ -43,8 +46,8 @@ function App() {
       <title>Billboard IQ - find the right borads for you</title>
       </Helmet>
       <Routes>
-        <Route path="/login" element={user ? <Navigate to="/main" /> : <LoginPage onLogin={handleLogin} />} />
-        <Route path="/main" element={user ? <MainPage onLogout={handleLogout} /> : <Navigate to="/login" />} />
+        <Route path="/login" element={user ? <Navigate to="/main" /> : <LoginPage onLogin={onLogin} />} />
+        <Route path="/main" element={user ? <MainPage onLogout={onLogout} /> : <Navigate to="/login" />} />
         <Route path="*" element={<Navigate to={user ? "/main" : "/login"} />} />
       </Routes>
     </Router>

@@ -1,9 +1,12 @@
 import os
+import time
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask import Flask, jsonify, request
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from flask_cors import CORS, cross_origin
+
+from utilities import get_optimal_billboards
 
 app = Flask(__name__)
 jwt = JWTManager(app)
@@ -46,7 +49,6 @@ def get_data():
     }
     return jsonify(data)
 
-
 # Define the route for fetching GeoJSON data
 @app.route('/api/geojson', methods=['GET'])
 def get_geojson_data():
@@ -61,35 +63,37 @@ def get_geojson_data():
 
 @app.route('/api/billboards', methods=['POST'])
 def get_billboards():
-    try:
-        # Get the parameters from the request body
-        data = request.get_json()
-        file_path = data.get('file_path')
-        method = data.get('method')
+    data = request.get_json()  # Get data sent in the request
+    print(data)
 
-        if not file_path or not mode:
-            return jsonify({"error": "Invalid request parameters."}), 400
+    demand_file_name = "spatial_units_with_attr.zip"
+    data_folder = os.path.join(os.path.dirname(__file__), 'data')
+    demand_file_path = os.path.join(data_folder, demand_file_name)
+    bb_file_name = "billboards_phx_wpricing.csv"
+    bb_file_path = os.path.join(data_folder, bb_file_name)
 
-        # Construct the absolute file path to the GeoJSON file
-        file_path = os.path.join(os.getcwd(), file_path)
-        
-        with open(file_path, 'r') as file:
-            geojson_data = file.read()
-            # Process the mode parameter based on your needs
-            if mode == 1:
-                # Process data in mode 1
-                processed_data = process_mode_one(geojson_data)
-                return jsonify(processed_data)
-            elif mode == 2:
-                # Process data in mode 2
-                processed_data = process_mode_two(geojson_data)
-                return jsonify(processed_data)
-            else:
-                return jsonify({"error": "Invalid mode parameter."}), 400
-
-    except FileNotFoundError:
-        return jsonify({"error": "GeoJSON file not found."}), 404
-
+    # parameters
+    radius = 3000
+    max_num_billboards = 20
+    cost_field = "pricingEstPerMo"
+    max_cost = 40000
+    demand_field = "at_revco"
+    existing_bb = [10, 150]
+    #method_module = "solver.sp_ortools"
+    #method_module = "solver.sp_gurobi"
+    method_module = "solver.sp_cplex"
+    #method_module = "heuristic.sp_sa"
+    start_time = time.time()
+    optimal_billbards, covered_val = get_optimal_billboards(demand_file_path, bb_file_path, radius, max_num_billboards, cost_field, max_cost, demand_field, existing_bb, method_module)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    resultData = {
+        "optimalBillbards": optimal_billbards.to_json(orient="records"),
+        "coveredVal": covered_val,
+        "elapsedTime": elapsed_time
+    }
+    return jsonify(resultData)
+    
 # test post
 @app.route('/posttest', methods=['POST'])
 def post_test():

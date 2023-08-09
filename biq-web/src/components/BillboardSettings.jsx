@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
 
-function BillboardSettings() {
+function BillboardSettings({onSelectBillboards}) {
     
     const [type, setType] = useState('a');
     const [demand, setDemand] = useState('d');
     const [pricing, setPricing] = useState('p');
     const [numberOfBillboards, setNumberOfBillboards] = useState(1);
     const [radius, setRadius] = useState(1);
+
+    const onSubmitClick = () => {
+      const params = {
+        name: "user",
+        address: "123 Main St.",
+      };
+      onSelectBillboards(params);
+    };
 
     return (
         <div>
@@ -73,7 +81,7 @@ function BillboardSettings() {
           </div>
     
           <div className='billboard-settings-label'>
-            <button>Submit</button>
+            <button onClick={onSubmitClick}>Submit</button>
           </div>
 
         </div>

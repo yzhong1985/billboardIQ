@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, useMap, GeoJSON, ZoomControl } from 'react-leaflet';
+import { MapContainer, LayerGroup, TileLayer, useMap, GeoJSON, ZoomControl, Circle } from 'react-leaflet';
 import Sidebar from './Sidebar';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -31,11 +31,12 @@ function MapComponent({ onLogout }) {
     //const basemap_attr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>'
 
     // CartoDB.Positron
-    const basemap_url = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-    const basemap_attr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    const basemapUrl = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+    const basemapAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
 
     const [center, setCenter] = useState([lat, lng]);
     const [billboardData, setBillboardData] = useState(null);
+    const [resultBillboardLayers, setResultBillboardLayers] = useState([]);
 
     useEffect(() => {
         const loadBillboardJsonData = async () => {
@@ -65,19 +66,50 @@ function MapComponent({ onLogout }) {
 
     const recenterMap = (newCenter) => {
         setCenter(newCenter);
+    };
+
+    /** 
+     * request server to send billboards selection
+     * based on given parameters from BillboardSettings 
+    */
+    const selectBillboards = (params)=> {
+      console.log(params);
+      
+      const apiUrl = 'http://localhost:5000/api/billboards';  // Replace with your Flask API URL if different
+      const data = {
+        username: 'JohnDoe',  // Replace with the actual username
+      };
+
+      fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(parsedData  => {
+        //console.log(parsedData); 
+        const billboards = JSON.parse(parsedData.optimalBillbards);
+        console.log(billboards);
+        setResultBillboardLayers((prevLayers) => [...prevLayers, billboards]);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
     }
 
     return (
         <div style={{ height: "100vh", width: "100%" }}>
-            <Sidebar onLogout={onLogout} />
+            <Sidebar onLogout={onLogout} onSelectBillboards={selectBillboards} />
             <MapContainer center={center} zoom={zoom_level} zoomControl={false} style={{ height: "100%", width: "100%" }}>
                 <ZoomControl position='topright' />
                 <ChangeView center={center} />
-                <TileLayer
-                    url={basemap_url}
-                    attribution={basemap_attr}
-                />
+                <TileLayer url={basemapUrl} attribution={basemapAttr} />
                 {billboardData && <GeoJSON data={billboardData} pointToLayer={pointToLayer} />}
+                {resultBillboardLayers.map((layer, idx) => (
+                  <LayerGroup key={idx}>
+                  {layer.map((pt, ptIdx) => (<Circle key={ptIdx} center={[pt.lat, pt.long]} radius={100} />))}
+                  </LayerGroup>
+                ))}
             </MapContainer>
         </div>
     );

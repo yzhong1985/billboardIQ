@@ -21,3 +21,13 @@
     text-align: center;
     margin-top: 40px;
   }
+
+  .display-msg {
+    padding: 20px;
+    color: darkred;
+    font-weight: 600;
+  }
+
+  .display-loading {
+    padding: 20px;
+  }

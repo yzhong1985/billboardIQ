@@ -97,21 +97,4 @@ def cal_demand_series(df, field_array):
     return result_series
 
 
-# delete after use
-def test():
-    try:# read from demand file and facilities file
-        df = pd.DataFrame({
-            'field1': [1, 2, 3],
-            'field2': [4, 5, 6],
-            'field3': [7, 8, 9],
-        })
-
-        field_array = [('field1', 0.1), ('field2', 0.2), ('field3', 0.3)]
-
-        new_series = cal_demand_series(df, field_array)
-        print(new_series)
-        return None
-    except Exception as e:
-        print("An error occurred: ", e)
-        return None
         
