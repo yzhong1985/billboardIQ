@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, LayerGroup, TileLayer, useMap, GeoJSON, ZoomControl, Circle } from 'react-leaflet';
 import Sidebar from './Sidebar';
+import BillboardMarker from './BillboardMarker';
 import L from 'leaflet';
+import { useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../styles/main.css';
 
@@ -95,19 +97,39 @@ function MapComponent({ onLogout }) {
       .catch(error => {
         console.error('Error fetching data:', error);
       });
-    }
+    };
+
+    const MapEvents = () => {
+      const map = useMapEvents({
+        click: (event) => {
+          const { lat, lng } = event.latlng;
+          console.log(`You clicked the map at latitude: ${lat} and longitude: ${lng}`);
+        },
+        // You can handle other events here as well if needed
+      });
+    
+      return null; 
+    };
+
+    const handleMapClick = (event) => {
+      console.log('called');
+      const { lat, lng } = event.latlng;
+      console.log(`You clicked the map at latitude: ${lat} and longitude: ${lng}`);
+    };
 
     return (
         <div style={{ height: "100vh", width: "100%" }}>
             <Sidebar onLogout={onLogout} onSelectBillboards={selectBillboards} />
-            <MapContainer center={center} zoom={zoom_level} zoomControl={false} style={{ height: "100%", width: "100%" }}>
+            <MapContainer center={center} zoom={zoom_level} zoomControl={false} onClick={handleMapClick} style={{ height: "100%", width: "100%" }}>
+                <MapEvents />
                 <ZoomControl position='topright' />
                 <ChangeView center={center} />
                 <TileLayer url={basemapUrl} attribution={basemapAttr} />
                 {billboardData && <GeoJSON data={billboardData} pointToLayer={pointToLayer} />}
                 {resultBillboardLayers.map((layer, idx) => (
                   <LayerGroup key={idx}>
-                  {layer.map((pt, ptIdx) => (<Circle key={ptIdx} center={[pt.lat, pt.long]} radius={100} />))}
+                  {layer.map((pt, ptIdx) => ( <Circle key={ptIdx} center={[pt.lat, pt.long]} radius={3000} /> ))}
+                  {/*<BillboardMarker Point={pt} PointIndex={ptIdx} />*/}
                   </LayerGroup>
                 ))}
             </MapContainer>

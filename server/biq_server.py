@@ -5,12 +5,18 @@ from google.auth.transport import requests
 from flask import Flask, jsonify, request
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from flask_cors import CORS, cross_origin
+import threading
 
 from utilities import get_optimal_billboards
 
 app = Flask(__name__)
 jwt = JWTManager(app)
 CORS(app, origins=['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3000/login'])  # Enable CORS for the entire app
+
+semaphore = threading.Semaphore(1)
+
+
+
 
 # Setup the Flask-JWT-Extended extension
 app.config["JWT_SECRET_KEY"] = "c955f7202fd44c5db84464af36551727"  # set a key
@@ -63,36 +69,41 @@ def get_geojson_data():
 
 @app.route('/api/billboards', methods=['POST'])
 def get_billboards():
-    data = request.get_json()  # Get data sent in the request
-    print(data)
+    with semaphore:
+        try:
+            data = request.get_json()  
 
-    demand_file_name = "spatial_units_with_attr.zip"
-    data_folder = os.path.join(os.path.dirname(__file__), 'data')
-    demand_file_path = os.path.join(data_folder, demand_file_name)
-    bb_file_name = "billboards_phx_wpricing.csv"
-    bb_file_path = os.path.join(data_folder, bb_file_name)
+            demand_file_name = "spatial_units_with_attr.zip"
+            data_folder = os.path.join(os.path.dirname(__file__), 'data')
+            demand_file_path = os.path.join(data_folder, demand_file_name)
+            bb_file_name = "billboards_phx_wpricing.csv"
+            bb_file_path = os.path.join(data_folder, bb_file_name)
 
-    # parameters
-    radius = 3000
-    max_num_billboards = 20
-    cost_field = "pricingEstPerMo"
-    max_cost = 40000
-    demand_field = "at_revco"
-    existing_bb = [10, 150]
-    #method_module = "solver.sp_ortools"
-    #method_module = "solver.sp_gurobi"
-    method_module = "solver.sp_cplex"
-    #method_module = "heuristic.sp_sa"
-    start_time = time.time()
-    optimal_billbards, covered_val = get_optimal_billboards(demand_file_path, bb_file_path, radius, max_num_billboards, cost_field, max_cost, demand_field, existing_bb, method_module)
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    resultData = {
-        "optimalBillbards": optimal_billbards.to_json(orient="records"),
-        "coveredVal": covered_val,
-        "elapsedTime": elapsed_time
-    }
-    return jsonify(resultData)
+            # parameters
+            radius = 3000
+            max_num_billboards = 20
+            cost_field = "pricingEstPerMo"
+            max_cost = 40000
+            demand_field = "at_revco"
+            existing_bb = [10, 150]
+            #method_module = "solver.sp_ortools"
+            #method_module = "solver.sp_gurobi"
+            method_module = "solver.sp_cplex"
+            #method_module = "heuristic.sp_sa"
+            start_time = time.time()
+            optimal_billbards, covered_val = get_optimal_billboards(demand_file_path, bb_file_path, radius, max_num_billboards, cost_field, max_cost, demand_field, existing_bb, method_module)
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            resultData = {
+                "optimalBillbards": optimal_billbards.to_json(orient="records"),
+                "coveredVal": covered_val,
+                "elapsedTime": elapsed_time
+            }
+            return jsonify(resultData)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+        
+        
     
 # test post
 @app.route('/posttest', methods=['POST'])
