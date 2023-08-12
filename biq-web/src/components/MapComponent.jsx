@@ -1,11 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, LayerGroup, TileLayer, useMap, GeoJSON, ZoomControl, Circle } from 'react-leaflet';
-import Sidebar from './Sidebar';
-import BillboardMarker from './BillboardMarker';
+
+import { MapContainer, TileLayer, useMap, GeoJSON, ZoomControl, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
-import { useMapEvents } from 'react-leaflet';
+
+import Sidebar from './Sidebar';
+import BillboardLayer from './BillboardLayer';
+import WorkspaceModel from '../models/workspace';
+
 import 'leaflet/dist/leaflet.css';
 import '../styles/main.css';
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+  iconSize: [16, 24],  
+  iconAnchor: [8, 24], 
+  popupAnchor: [0, -24]
+});
 
 // for map's basic settings 
 const ChangeView = ({ center }) => {
@@ -19,41 +31,42 @@ function MapComponent({ onLogout }) {
 
     const lat = 33.486402;
     const lng = -112.099639;
-    //const basemap_url = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
-    //const basemap_attr = "Tiles &copy; Esri &mdash; Esri"
     const zoom_level = 11
-
-    /*
-    const basemap_url = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-    const basemap_attr = '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributor'
-    */
-
-    // OpenStreetMap.HOT
-    //const basemap_url = "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
-    //const basemap_attr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles style by <a href="https://www.hotosm.org/" target="_blank">Humanitarian OpenStreetMap Team</a> hosted by <a href="https://openstreetmap.fr/" target="_blank">OpenStreetMap France</a>'
-
-    // CartoDB.Positron
-    const basemapUrl = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-    const basemapAttr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
 
     const [center, setCenter] = useState([lat, lng]);
     const [billboardData, setBillboardData] = useState(null);
     const [resultBillboardLayers, setResultBillboardLayers] = useState([]);
+    const [currentWorkspace, setCurrentWorkspace] = useState(null);
 
     useEffect(() => {
-        const loadBillboardJsonData = async () => {
-          try {
-            const response = await fetch('/data/billboard_pts.geojson');
-            const data = await response.json();
-            setBillboardData(data);
-            //setBillboardData(JSON.stringify(data, null, 2)); // Convert the JSON data to a formatted string
-          } catch (error) {
-            console.error('Error loading JSON:', error);
-          }
-        };
+        //loadAvailableBillboards();
+        loadWorkspaces();
+    }, []); 
+
+    const loadWorkspaces = async () => {
+      try {
+        const user = JSON.parse(sessionStorage.getItem('userdata'));
+        const response = await fetch('http://localhost:5000/workspace/' + user.userid);
+        const data = await response.json();
+        //set default workspace as the first wp
+        const defaultWorkspace = new WorkspaceModel(data[0]);
+        setCurrentWorkspace(defaultWorkspace);
+      } catch (error) {
+        console.error('Error loading Workspaces:', error);
+      }
+    }
+
+    const loadAvailableBillboards = async () => {
+      try {
+        const response = await fetch('/data/billboard_pts.geojson');
+        const data = await response.json();
+        setBillboardData(data);
+        //setBillboardData(JSON.stringify(data, null, 2)); // Convert the JSON data to a formatted string
+      } catch (error) {
+        console.error('Error loading JSON:', error);
+      }
+    };
     
-        loadBillboardJsonData();
-      }, []); 
 
     const pointToLayer = (feature, latlng) => {
         return L.circleMarker(latlng, {
@@ -79,7 +92,13 @@ function MapComponent({ onLogout }) {
       
       const apiUrl = 'http://localhost:5000/api/billboards';  // Replace with your Flask API URL if different
       const data = {
-        username: 'JohnDoe',  // Replace with the actual username
+        username: 'yzhong',
+        radius: 3000,
+        max_bb_num: 25,
+        bb_pricing_field: 'pricingEstPerMo',
+        max_total_cost: 40000,
+        demand_field: 'at_revco',
+        method: 'solver.sp_gurobi',
       };
 
       fetch(apiUrl, {
@@ -90,7 +109,7 @@ function MapComponent({ onLogout }) {
       .then(response => response.json())
       .then(parsedData  => {
         //console.log(parsedData); 
-        const billboards = JSON.parse(parsedData.optimalBillbards);
+        const billboards = JSON.parse(parsedData.billbards);
         console.log(billboards);
         setResultBillboardLayers((prevLayers) => [...prevLayers, billboards]);
       })
@@ -124,14 +143,11 @@ function MapComponent({ onLogout }) {
                 <MapEvents />
                 <ZoomControl position='topright' />
                 <ChangeView center={center} />
-                <TileLayer url={basemapUrl} attribution={basemapAttr} />
+                {currentWorkspace && <TileLayer url={currentWorkspace.basemapUrl} attribution={currentWorkspace.basemapAttr} />}
                 {billboardData && <GeoJSON data={billboardData} pointToLayer={pointToLayer} />}
-                {resultBillboardLayers.map((layer, idx) => (
-                  <LayerGroup key={idx}>
-                  {layer.map((pt, ptIdx) => ( <Circle key={ptIdx} center={[pt.lat, pt.long]} radius={3000} /> ))}
-                  {/*<BillboardMarker Point={pt} PointIndex={ptIdx} />*/}
-                  </LayerGroup>
-                ))}
+                {resultBillboardLayers.map((layer, layerIdx) => (
+                  <BillboardLayer key={layerIdx} layer={layer} />
+                ))}              
             </MapContainer>
         </div>
     );

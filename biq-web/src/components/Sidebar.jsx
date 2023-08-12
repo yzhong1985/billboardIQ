@@ -15,7 +15,6 @@ function Sidebar({ onLogout, onSelectBillboards }) {
 
 
     const handleItemClick = (item) => {
-        
         //clicked when nothing is highlighted
         if(activeItem == null && item!= null){
             if (!document.body.classList.contains("active-sidebar")) {
