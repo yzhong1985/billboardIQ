@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-
-import { MapContainer, TileLayer, useMap, GeoJSON, ZoomControl, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap, GeoJSON, ZoomControl, useMapEvents, Marker  } from 'react-leaflet';
 import L from 'leaflet';
+
+// load heatmap and grid map
+import DemandHeatmap from './DemandHeatmap';
+import AreaGrid from './AreaGrid';
 
 import Sidebar from './Sidebar';
 import BillboardLayer from './BillboardLayer';
@@ -9,6 +12,7 @@ import WorkspaceModel from '../models/workspace';
 
 import 'leaflet/dist/leaflet.css';
 import '../styles/main.css';
+
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
@@ -29,8 +33,8 @@ const ChangeView = ({ center }) => {
 // the main component for displaying and interacting with the leaflet map
 function MapComponent({ onLogout }) {
 
-    const lat = 33.486402;
-    const lng = -112.099639;
+    const lat = 33.45496890;
+    const lng = -112.18829470;
     const zoom_level = 11
 
     const [center, setCenter] = useState([lat, lng]);
@@ -39,8 +43,8 @@ function MapComponent({ onLogout }) {
     const [currentWorkspace, setCurrentWorkspace] = useState(null);
 
     useEffect(() => {
-        //loadAvailableBillboards();
         loadWorkspaces();
+        loadAvailableBillboards();
     }, []); 
 
     const loadWorkspaces = async () => {
@@ -59,9 +63,10 @@ function MapComponent({ onLogout }) {
     const loadAvailableBillboards = async () => {
       try {
         const response = await fetch('/data/billboard_pts.geojson');
-        const data = await response.json();
-        setBillboardData(data);
-        //setBillboardData(JSON.stringify(data, null, 2)); // Convert the JSON data to a formatted string
+        const geoJsonData = await response.json();
+        console.log("geoJsonData");
+        console.log(geoJsonData);
+        setBillboardData(geoJsonData.features);
       } catch (error) {
         console.error('Error loading JSON:', error);
       }
@@ -139,15 +144,18 @@ function MapComponent({ onLogout }) {
     return (
         <div style={{ height: "100vh", width: "100%" }}>
             <Sidebar onLogout={onLogout} onSelectBillboards={selectBillboards} />
-            <MapContainer center={center} zoom={zoom_level} zoomControl={false} onClick={handleMapClick} style={{ height: "100%", width: "100%" }}>
+            <MapContainer center={center} zoom={zoom_level} zoomControl={false} maxZoom={18} onClick={handleMapClick} style={{ height: "100%", width: "100%" }}>
+                {/*<DemandHeatmap data={null} />*/}
+                {/*<AreaGrid topLeft={null} bottomRight={null} cellSize={null} />*/}
                 <MapEvents />
                 <ZoomControl position='topright' />
                 <ChangeView center={center} />
                 {currentWorkspace && <TileLayer url={currentWorkspace.basemapUrl} attribution={currentWorkspace.basemapAttr} />}
-                {billboardData && <GeoJSON data={billboardData} pointToLayer={pointToLayer} />}
+                {billboardData && <BillboardLayer data={billboardData} />}
                 {resultBillboardLayers.map((layer, layerIdx) => (
                   <BillboardLayer key={layerIdx} layer={layer} />
-                ))}              
+                ))}
+          
             </MapContainer>
         </div>
     );

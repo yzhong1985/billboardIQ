@@ -1,26 +1,41 @@
-import React, { useState } from 'react';
-import {  LayerGroup, Circle, Marker } from 'react-leaflet';
+import React, { useState, useEffect } from 'react';
+import { LayerGroup, Marker, CircleMarker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 
-function BillboardLayer({layer}) {
+import Cluster from 'react-leaflet-cluster'
 
-    //const [latitude, setLatitude] = useState[point.lat];
-    //const [longitude, setLongitude] = useState(point.long);
-    //const [coverRadius, setCoverRadius] = useState(3000);
+/**
+ * this component is to represent a layer of billboards, 
+ * can display points, polygon, marker, symbol to represent billboard based on setting
+ */
+function BillboardLayer({data}) {
 
-    const circleStyles = {
-        weight: 0,
-        fillColor: "blue",
-        fillOpacity: 0.2
+    const [billboards, setBillboards] = useState([]);
+
+    const bbPointStyle = {
+        radius: 2, fillColor: "#313866", fillOpacity: 1, stroke: false
     };
-    
+
+    const customIcon = new L.Icon({
+        iconUrl: require('../styles/location.svg').default,
+        iconSize: new L.Point(40, 47),
+    });
+
+    useEffect(() => {
+        setBillboards(data);
+    }, [data]);
+
     return (
         <LayerGroup>
-            {layer.map((pt, ptIndex) => ( 
-                <>
-                    <Circle key={"c-" + ptIndex} center={[pt.lat, pt.long]} radius={3000} {...circleStyles} />
-                    <Marker key={"m-" + ptIndex} position={[pt.lat, pt.long]} />
-                </> 
-            ))}
+        {/*<CircleMarker key={index} center={[bb.geometry.coordinates[1], bb.geometry.coordinates[0]]} {...bbPointStyle} />*/}
+        {/**<Marker key={index} position={[bb.geometry.coordinates[1], bb.geometry.coordinates[0]]} title={index} icon={customIcon}></Marker> */}
+        <Cluster>
+        {billboards && billboards.map((bb, index) => (
+            <Marker key={index} position={[bb.geometry.coordinates[1], bb.geometry.coordinates[0]]}>
+                <Popup> I am a popup! </Popup>
+            </Marker>
+        ))}
+        </Cluster>
         </LayerGroup>
     );
 }

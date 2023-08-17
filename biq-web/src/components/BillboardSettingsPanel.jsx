@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function BillboardSettings({onSelectBillboards}) {
+function BillboardSettingsPanel({onSelectBillboards}) {
     
     const [type, setType] = useState('a');
     const [demand, setDemand] = useState('d');
@@ -88,4 +88,4 @@ function BillboardSettings({onSelectBillboards}) {
       );
     }
 
-export default BillboardSettings;
+export default BillboardSettingsPanel;

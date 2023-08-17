@@ -8,7 +8,7 @@
 
 svg:not(:root) {
     overflow: hidden;
-  }
+}
   
   .hidden {
     display: none;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import BillboardSettings from './BillboardSettings';
+import BillboardSettingsPanel from './BillboardSettingsPanel';
 import { googleLogout } from '@react-oauth/google';
 
 import { AiOutlineMenu, AiFillDatabase, AiFillBulb, AiFillSignal, AiTwotoneSetting, AiOutlineCloseCircle } from 'react-icons/ai';
@@ -98,17 +98,17 @@ function Sidebar({ onLogout, onSelectBillboards }) {
                     <li className={`menu-item ${activeItem === 'menu' ? 'active-item' : ''}`} onClick={() => handleItemClick('menu')}>
                     <AiOutlineMenu /> 
                     </li>
+                    <li className={`menu-item ${activeItem === 'business' ? 'active-item' : ''}`} onClick={() => handleItemClick('business')}>
+                    <AiFillBulb />
+                    </li>
+                    <li className={`menu-item ${activeItem === 'billboards' ? 'active-item' : ''}`} onClick={() => handleItemClick('billboards')}>
+                    <AiFillSignal />
+                    </li>
                     <li className={`menu-item ${activeItem === 'params' ? 'active-item' : ''}`} onClick={() => handleItemClick('params')}>
                     <AiFillDatabase />
                     </li>
                     <li className={`menu-item ${activeItem === 'layers' ? 'active-item' : ''}`} onClick={() => handleItemClick('layers')}>
                     <IoLayersSharp />
-                    </li>
-                    <li className={`menu-item ${activeItem === 'email' ? 'active-item' : ''}`} onClick={() => handleItemClick('email')}>
-                    <AiFillBulb />
-                    </li>
-                    <li className={`menu-item ${activeItem === 'locate' ? 'active-item' : ''}`} onClick={() => handleItemClick('locate')}>
-                    <AiFillSignal />
                     </li>
                     <li className={`menu-item ${activeItem === 'settings' ? 'active-item' : ''}`} onClick={() => handleItemClick('settings')}>
                     <AiTwotoneSetting />
@@ -122,33 +122,20 @@ function Sidebar({ onLogout, onSelectBillboards }) {
                         <p>Introducing BillboardIQ, the ultimate tool for selecting the best billboard locations. </p>
                         <p>Utilizing big data analysis, social media data, and other geodata from the area, our app provides optimal results for maximum coverage. With cutting-edge algorithms and data-driven decision-making, BillboardIQ takes the guesswork out of selecting the perfect location for your billboard advertising.</p>
                     </div>
-                    {/** TEST - delete after use */}
                     <div className='workspace-wrapper' style={divStyle1}><div className='workspace-name'>Phoenix, AZ</div></div>
                     <div className='workspace-wrapper' style={divStyle2}><div className='workspace-name'>Seattle, WA</div></div>
                     </div>
-                    <div className={`item-content ${activeItem === 'params' ? 'active' : ''}`} id="params">
-                    <h2>Set Parameters</h2>
+                    <div className={`item-content ${activeItem === 'business' ? 'active' : ''}`} id="business">
+                    <h2>Local Businesses</h2>
                     <div className="content">
-                        <BillboardSettings onSelectBillboards={onSelectBillboards} />
+                        Business options 
+                        - show grid network
+                        - can add some heatmaps for business
+                        
                     </div>
                     </div>
-                    <div className={`item-content ${activeItem === 'layers' ? 'active' : ''}`} id="layers">
-                    <h2>Layers</h2>
-                    <div className="content">
-                        Layers
-                    </div>
-                    </div>
-                    <div className={`item-content ${activeItem === 'email' ? 'active' : ''}`} id="email">
-                    <h2>Email</h2>
-                    <div className="content">
-                        email - Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                        Nobis nostrum incidunt, ab explicabo expedita aliquam officiis vitae
-                        quaerat magni dolores iure odit? Id labore eveniet eligendi
-                        voluptatibus. Repellat, assumenda!!!
-                    </div>
-                    </div>
-                    <div className={`item-content ${activeItem === 'locate' ? 'active' : ''}`} id="locate">
-                    <h2>Locate Billboards</h2>
+                    <div className={`item-content ${activeItem === 'billboards' ? 'active' : ''}`} id="billboards">
+                    <h2>Billboard Locations</h2>
                     <div className="content">
                         email - Lorem, ipsum dolor sit amet consectetur adipisicing elit.
                         Nobis nostrum incidunt, ab explicabo expedita aliquam officiis vitae
@@ -160,6 +147,18 @@ function Sidebar({ onLogout, onSelectBillboards }) {
                         quaerat magni dolores iure odit? Id labore eveniet eligendi
                         voluptatibus. Repellat, assumenda!!!
 
+                    </div>
+                    </div>
+                    <div className={`item-content ${activeItem === 'params' ? 'active' : ''}`} id="params">
+                    <h2>Set Parameters</h2>
+                    <div className="content">
+                        <BillboardSettingsPanel onSelectBillboards={onSelectBillboards} />
+                    </div>
+                    </div>
+                    <div className={`item-content ${activeItem === 'layers' ? 'active' : ''}`} id="layers">
+                    <h2>Layers</h2>
+                    <div className="content">
+                        Layers
                     </div>
                     </div>
                     <div className={`item-content ${activeItem === 'settings' ? 'active' : ''}`} id="settings">
