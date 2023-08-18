@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, GeoJSON, ZoomControl, useMapEvents, Marker  } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -35,17 +35,15 @@ function MapComponent({ onLogout }) {
 
     const lat = 33.45496890;
     const lng = -112.18829470;
-    const zoom_level = 11
+
 
     const [center, setCenter] = useState([lat, lng]);
     const [billboardData, setBillboardData] = useState(null);
     const [resultBillboardLayers, setResultBillboardLayers] = useState([]);
     const [currentWorkspace, setCurrentWorkspace] = useState(null);
+    const [zoomLevel, setZoomLevel] = useState(11);
 
-    useEffect(() => {
-        loadWorkspaces();
-        loadAvailableBillboards();
-    }, []); 
+
 
     const loadWorkspaces = async () => {
       try {
@@ -64,8 +62,6 @@ function MapComponent({ onLogout }) {
       try {
         const response = await fetch('/data/billboard_pts.geojson');
         const geoJsonData = await response.json();
-        console.log("geoJsonData");
-        console.log(geoJsonData);
         setBillboardData(geoJsonData.features);
       } catch (error) {
         console.error('Error loading JSON:', error);
@@ -141,19 +137,24 @@ function MapComponent({ onLogout }) {
       console.log(`You clicked the map at latitude: ${lat} and longitude: ${lng}`);
     };
 
+    useEffect(() => {
+      loadWorkspaces();
+      loadAvailableBillboards();
+    }, []); 
+
     return (
         <div style={{ height: "100vh", width: "100%" }}>
             <Sidebar onLogout={onLogout} onSelectBillboards={selectBillboards} />
-            <MapContainer center={center} zoom={zoom_level} zoomControl={false} maxZoom={18} onClick={handleMapClick} style={{ height: "100%", width: "100%" }}>
+            <MapContainer center={center} zoom={zoomLevel} zoomControl={false} maxZoom={18} onClick={handleMapClick} style={{ height: "100%", width: "100%" }}>
                 {/*<DemandHeatmap data={null} />*/}
                 {/*<AreaGrid topLeft={null} bottomRight={null} cellSize={null} />*/}
                 <MapEvents />
                 <ZoomControl position='topright' />
                 <ChangeView center={center} />
                 {currentWorkspace && <TileLayer url={currentWorkspace.basemapUrl} attribution={currentWorkspace.basemapAttr} />}
-                {billboardData && <BillboardLayer data={billboardData} />}
+                {billboardData && <BillboardLayer layerName={"l-candidate"} data={billboardData} />}
                 {resultBillboardLayers.map((layer, layerIdx) => (
-                  <BillboardLayer key={layerIdx} layer={layer} />
+                  <BillboardLayer key={`l-${layerIdx}`} layer={layer} />
                 ))}
           
             </MapContainer>
