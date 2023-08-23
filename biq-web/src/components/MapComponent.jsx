@@ -33,17 +33,16 @@ const ChangeView = ({ center }) => {
 // the main component for displaying and interacting with the leaflet map
 function MapComponent({ onLogout }) {
 
-    const lat = 33.45496890;
-    const lng = -112.18829470;
+    //const lat = 33.48699671025641;
+    //const lng = -112.1038201079769;
 
+    const [mapCenter, setMapCenter] = useState({ lat: 33.45496890, lng: -112.18829470 });
 
-    const [center, setCenter] = useState([lat, lng]);
+    //const [center, setCenter] = useState([lat, lng]);
     const [billboardData, setBillboardData] = useState(null);
     const [resultBillboardLayers, setResultBillboardLayers] = useState([]);
     const [currentWorkspace, setCurrentWorkspace] = useState(null);
-    const [zoomLevel, setZoomLevel] = useState(11);
-
-
+    const [zoomLevel, setZoomLevel] = useState(10);
 
     const loadWorkspaces = async () => {
       try {
@@ -81,7 +80,7 @@ function MapComponent({ onLogout }) {
     };
 
     const recenterMap = (newCenter) => {
-        setCenter(newCenter);
+       //setCenter(newCenter);
     };
 
     /** 
@@ -111,7 +110,7 @@ function MapComponent({ onLogout }) {
       .then(parsedData  => {
         //console.log(parsedData); 
         const billboards = JSON.parse(parsedData.billbards);
-        console.log(billboards);
+        //console.log(billboards);
         setResultBillboardLayers((prevLayers) => [...prevLayers, billboards]);
       })
       .catch(error => {
@@ -121,20 +120,21 @@ function MapComponent({ onLogout }) {
 
     const MapEvents = () => {
       const map = useMapEvents({
-        click: (event) => {
-          const { lat, lng } = event.latlng;
+        click: (e) => {
+          const { lat, lng } = e.latlng;
           console.log(`You clicked the map at latitude: ${lat} and longitude: ${lng}`);
         },
-        // You can handle other events here as well if needed
+        move: (e) => {
+          //const newCenter = e.target.getCenter();
+          //console.log(newCenter);
+        }    
       });
     
       return null; 
     };
 
-    const handleMapClick = (event) => {
-      console.log('called');
-      const { lat, lng } = event.latlng;
-      console.log(`You clicked the map at latitude: ${lat} and longitude: ${lng}`);
+    const onToggleBillboards = () => {
+      console.log("toggle.. billboard layer");
     };
 
     useEffect(() => {
@@ -144,19 +144,18 @@ function MapComponent({ onLogout }) {
 
     return (
         <div style={{ height: "100vh", width: "100%" }}>
-            <Sidebar onLogout={onLogout} onSelectBillboards={selectBillboards} />
-            <MapContainer center={center} zoom={zoomLevel} zoomControl={false} maxZoom={18} onClick={handleMapClick} style={{ height: "100%", width: "100%" }}>
+            <Sidebar onLogout={onLogout} onSelectBillboards={selectBillboards} onTurnOffBillboards={onToggleBillboards} />
+            <MapContainer center={mapCenter} zoom={zoomLevel} zoomControl={false} maxZoom={18} style={{ height: "100%", width: "100%" }}>
                 {/*<DemandHeatmap data={null} />*/}
                 {/*<AreaGrid topLeft={null} bottomRight={null} cellSize={null} />*/}
                 <MapEvents />
                 <ZoomControl position='topright' />
-                <ChangeView center={center} />
+                <ChangeView center={mapCenter} />
                 {currentWorkspace && <TileLayer url={currentWorkspace.basemapUrl} attribution={currentWorkspace.basemapAttr} />}
                 {billboardData && <BillboardLayer layerName={"l-candidate"} data={billboardData} />}
                 {resultBillboardLayers.map((layer, layerIdx) => (
                   <BillboardLayer key={`l-${layerIdx}`} layer={layer} />
                 ))}
-          
             </MapContainer>
         </div>
     );

@@ -212,7 +212,13 @@ svg:not(:root) {
     font-size: medium;
   }
 
-  .billboard-settings-label select,input {
+  .billboard-settings-label select {
+    width:150px;
+    font-size: medium;
+    padding:2px;
+  }
+
+  .billboard-settings-label input {
     width:150px;
     font-size: medium;
     padding:2px;
@@ -254,3 +260,35 @@ svg:not(:root) {
     width: 100%;
     background-color: rgb(63, 63, 63, 0.8);
   }
+
+
+  .overlayBox {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000; /* Ensures overlay appears above the map */
+}
+
+.billboard-infobox {
+  float: left;
+  width: 100%;
+  min-width: 300px;
+}
+
+.billboard-infobox-field {
+  float: left;
+  width: 40%;
+}
+
+.billboard-infobox-value {
+  float: left;
+  width: 55%;
+  padding-left: 5px;
+}
+
+.leaflet-popup-content {
+  min-height: 200px;
+}

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import BillboardSettingsPanel from './BillboardSettingsPanel';
+import BillboardLocationsPanel from './BillboardLocationsPanel';
 import { googleLogout } from '@react-oauth/google';
 
 import { AiOutlineMenu, AiFillDatabase, AiFillBulb, AiFillSignal, AiTwotoneSetting, AiOutlineCloseCircle } from 'react-icons/ai';
 import { IoLayersSharp } from "react-icons/io5";
 
-function Sidebar({ onLogout, onSelectBillboards }) {
+function Sidebar({ onLogout, onSelectBillboards, onTurnOffBillboards }) {
     
     const [activeItem, setActiveItem] = useState(null);
     const [showCaseItems, setShowCaseItems] = useState(null);
@@ -54,15 +55,13 @@ function Sidebar({ onLogout, onSelectBillboards }) {
         } catch (error) {
           console.error('Error fetching data:', error);
         }
-    }
+    };
 
     const postData = async () => {
         try {
           const response = await fetch('http://localhost:5000/posttest', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ name: 'abc', email: 'abc@gmail.com' }),
           });
           const data = await response.json();
@@ -137,16 +136,7 @@ function Sidebar({ onLogout, onSelectBillboards }) {
                     <div className={`item-content ${activeItem === 'billboards' ? 'active' : ''}`} id="billboards">
                     <h2>Billboard Locations</h2>
                     <div className="content">
-                        email - Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                        Nobis nostrum incidunt, ab explicabo expedita aliquam officiis vitae
-                        laborum dicta consectetur, animi cum, culpa quaerat nam? Porro
-
-                        reprehenderit molestias qui doloribus quaerat consequuntur
-                        voluptatibus! Quos impedit a non eligendi, dolor animi sapiente
-
-                        quaerat magni dolores iure odit? Id labore eveniet eligendi
-                        voluptatibus. Repellat, assumenda!!!
-
+                        <BillboardLocationsPanel onToggleBillboard={onTurnOffBillboards} />
                     </div>
                     </div>
                     <div className={`item-content ${activeItem === 'params' ? 'active' : ''}`} id="params">

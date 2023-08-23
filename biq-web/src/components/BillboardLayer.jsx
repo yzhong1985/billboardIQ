@@ -11,9 +11,10 @@ import BillboardInfoBox from './BillboardInfoBox';
 function BillboardLayer({layerName, data}) {
 
     const [billboards, setBillboards] = useState([]);
-    const [selectBillboardIndex, setSelectedBillboardIndex] = useState(null);
-
-    const [popupPosition, setPopupPosition] = useState(null);
+    const [selectedBillboard, setSelectedBillboard] = useState(null);
+    const [selectedBillboardIndex, setSelectedBillboardIndex] = useState(null);
+    const [selectedBillboardPos, setSelectedBillboardPos] = useState(null);
+    const [showCoverageRadius, setShowCoverageRadius] = useState(false);
 
     const bbPointConfig = {
         radius: 1000, //1000 meters
@@ -28,7 +29,7 @@ function BillboardLayer({layerName, data}) {
         zoomToBoundsOnClick: false,
         showCoverageOnHover: false,
         spiderfyOnMaxZoom: false,
-        animate:false,
+        animate:true,
         disableClusteringAtZoom: 15
     };
 
@@ -44,16 +45,24 @@ function BillboardLayer({layerName, data}) {
         });
     }
 
-    const markerIconConfig = new L.Icon({
+    const markerIcon = new L.Icon({
         iconUrl: require('../styles/marker.svg').default,
         iconSize: [16, 24],
         iconAnchor: [8, 24], 
-        popupAnchor: [0, -24]
+        popupAnchor: [0, -12]
     });
 
-    const onMarkerClick = (e, index) => {
+    const selectMarkerIcon = new L.Icon({
+        iconUrl: require('../styles/marker_select.svg').default,
+        iconSize: [16, 24],
+        iconAnchor: [8, 24], 
+        popupAnchor: [0, -12]
+    });
+
+    const onMarkerClick = (e, index, billboard) => {
         setSelectedBillboardIndex(index);
-        setPopupPosition(e.latlng); 
+        setSelectedBillboardPos(e.latlng);
+        setSelectedBillboard(billboard);
     };
 
     const renderBillboardInfo = (billboardObj) => {
@@ -64,27 +73,31 @@ function BillboardLayer({layerName, data}) {
 
     useEffect(() => {
         setBillboards(data);
+        //console.log(data);
     }, [data]);
 
     return (
         <LayerGroup>
-        <Cluster {...clusterConfig} iconCreateFunction={renderClusterIcon}>
+        <Cluster {...clusterConfig}>
         {billboards && billboards.map((bb, index) => (
             <Fragment key={`frag-${index}`}>
               <Marker key={`m-${index}`}
                 position={[bb.geometry.coordinates[1], bb.geometry.coordinates[0]]} 
-                icon={markerIconConfig} 
-                eventHandlers={{ click: (e) => onMarkerClick(e, index) }}>
+                icon={index === selectedBillboardIndex ? selectMarkerIcon : markerIcon}
+                eventHandlers={{ click: (e) => onMarkerClick(e, index, bb) }}>
               </Marker>
-              { (selectBillboardIndex === index) ? <Circle key={`r-${index}`} center={[bb.geometry.coordinates[1], bb.geometry.coordinates[0]]} {...bbPointConfig} ></Circle> : null}
             </Fragment>
         ))}
-        {popupPosition && (
-            <Popup position={popupPosition}>
-                {/* Render content based on activeMarkerIndex */}
-                Content for marker {selectBillboardIndex}
+        {selectedBillboardPos && (
+            <Popup position={selectedBillboardPos} offset={[0, -16]}>
+                <div className='billboard-infobox'>
+                    <div className='billboard-infobox-field'>Show:</div><div className='billboard-infobox-value'><input type="checkbox" checked={showCoverageRadius} onChange={e => setShowCoverageRadius(e.target.checked)}/></div> 
+                    <div className='billboard-infobox-field'>Coverage:</div><div className='billboard-infobox-value'>{"500(m)"}</div>
+                </div>
             </Popup>
         )}
+        {/* Render coverage radius */}
+        { showCoverageRadius && selectedBillboardPos && <Circle center={selectedBillboardPos} {...bbPointConfig} ></Circle> }
         </Cluster>
         </LayerGroup>
     );
