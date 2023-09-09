@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import LoginPage from './pages/LoginPage';
 import MainPage from './pages/MainPage';
+import appConfig from "./config.json";
 
 function App() {
 
@@ -11,7 +12,7 @@ function App() {
   const onLogin = async (response) => {
     const id_token = response.credential;
     try {
-      const result = await fetch('http://localhost:5000/tokensignin', {
+      const result = await fetch(appConfig.SERVER_URL + 'tokensignin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,9 +43,11 @@ function App() {
 
   return (
     <Router>
-      <Helmet>
-      <title>Billboard IQ - find the right borads for you</title>
-      </Helmet>
+      <HelmetProvider>
+        <Helmet>
+        <title>Billboard IQ - find the right borads for you</title>
+        </Helmet>
+      </HelmetProvider>
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/main" /> : <LoginPage onLogin={onLogin} />} />
         <Route path="/main" element={user ? <MainPage onLogout={onLogout} /> : <Navigate to="/login" />} />
@@ -55,3 +58,9 @@ function App() {
 }
 
 export default App;
+
+/**
+ *       <Helmet>
+      <title>Billboard IQ - find the right borads for you</title>
+      </Helmet>
+ */

@@ -1,0 +1,9 @@
+{
+    "SERVER_URL": "http://localhost:5000/",
+    "DEBUG_MODE": true,
+    "DEF_CENTER": [33.4549689, -112.1882947],
+    "DEF_ZOOM": 10,
+    "DEF_MAX_ZOOM": 18,
+    "DEF_MIN_ZOOM": 8
+}
+

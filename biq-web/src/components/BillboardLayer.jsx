@@ -33,23 +33,11 @@ function BillboardLayer({layerName, data}) {
         disableClusteringAtZoom: 15
     };
 
-    const renderClusterIcon = (cluster) => {
-        const count = cluster.getChildCount();
-        const size = count < 10 ? 'small' : count < 100 ? 'medium' : 'large';
-        const halfCount = Math.round(count / 2);
-        
-        return L.divIcon({
-          html: `<div><span>${halfCount}</span></div>`,
-          className: `marker-cluster marker-cluster-${size}`,
-          iconSize: L.point(40, 40)
-        });
-    }
-
     const markerIcon = new L.Icon({
-        iconUrl: require('../styles/marker.svg').default,
-        iconSize: [16, 24],
-        iconAnchor: [8, 24], 
-        popupAnchor: [0, -12]
+        iconUrl: require('../styles/marker_reg.svg').default,
+        iconSize: [8, 12],
+        iconAnchor: [4, 12], 
+        popupAnchor: [0, -6]
     });
 
     const selectMarkerIcon = new L.Icon({

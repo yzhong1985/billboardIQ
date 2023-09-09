@@ -7,6 +7,12 @@ function BillboardSettingsPanel({onSelectBillboards}) {
     const [pricing, setPricing] = useState('p');
     const [numberOfBillboards, setNumberOfBillboards] = useState(1);
     const [radius, setRadius] = useState(1);
+    const [budget, setBudget] = useState(0);
+
+
+    const DEF_BUDGET = 40000;
+    const DEF_RADIUS = 3000;
+    const DEF_TOTALNUM_BB = 15;
 
     const onSubmitClick = () => {
       const params = {
@@ -52,7 +58,7 @@ function BillboardSettingsPanel({onSelectBillboards}) {
               type="number" 
               min="1" 
               max="50" 
-              value={numberOfBillboards} 
+              value={DEF_TOTALNUM_BB} 
               onChange={(e) => setNumberOfBillboards(e.target.value)}
             />
           </div>
@@ -65,7 +71,7 @@ function BillboardSettingsPanel({onSelectBillboards}) {
               min="1" 
               max="10000"
               step="500" 
-              value={radius} 
+              value={DEF_RADIUS} 
               onChange={(e) => setRadius(e.target.value)}
             />
           </div>
@@ -76,7 +82,9 @@ function BillboardSettingsPanel({onSelectBillboards}) {
               id="budgetm" 
               type="number" 
               min="1000" 
-              max="1000000" 
+              max="1000000"
+              value={DEF_BUDGET}
+              onChange={(e) => setBudget(e.target.value)} 
             />
           </div>
     
