@@ -80,10 +80,6 @@ def get_geojson_data():
     except FileNotFoundError:
         return jsonify({"error": "GeoJSON file not found."}), 404
 
-
-
-
-
 # the main endpoint to calculate optimal billboards
 @app.route('/api/billboards', methods=['POST'])
 def get_billboards():
@@ -130,9 +126,6 @@ def get_billboards():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
         
-
-
-
 
 # test post
 @app.route('/posttest', methods=['POST'])

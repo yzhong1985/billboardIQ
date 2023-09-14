@@ -25,7 +25,6 @@ svg:not(:root) {
 
 .sidebar {
   display: flex;
-  gap: 1rem;
   position: absolute;
   width: 46px;
   max-width: 480px;
@@ -152,7 +151,6 @@ svg:not(:root) {
 .item-content {
   display: none;
   margin-top: 8px;
-  padding-right: 10px;
   height: 100%;
 }
 
@@ -189,9 +187,10 @@ svg:not(:root) {
   white-space: nowrap;
   width: calc(100% - 10px);
   height: 25px;
-  margin: 0;
+  margin-bottom: 8px;
   text-overflow: ellipsis;
   overflow: hidden;
+  padding-left: 10px;
 }
 
 .sidebar-content p {
@@ -300,4 +299,9 @@ svg:not(:root) {
 .biq-map-container {
   height: 100vh;
   width: 100%;
+}
+
+.debug-login-btn {
+  margin-top: 30px;
+  padding: 10px;
 }

@@ -6,7 +6,7 @@ import { RiRoadMapLine } from "react-icons/ri";
 
 import '../styles/login.css';
 
-function LoginPage({ onLogin }) {
+function LoginPage({ onLogin, onDebugLogin }) {
 
   const [messageToDisplay, setMessageToDisplay] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +22,10 @@ function LoginPage({ onLogin }) {
 
   const OnDisplayMsgClick = () => {
     setMessageToDisplay(null);
+  }
+
+  const OnDebugLogin = () => {
+    onDebugLogin();
   }
 
   return (
@@ -41,6 +45,7 @@ function LoginPage({ onLogin }) {
       </div>
       { isLoading && <div className='display-loading'><TailSpin stroke='#2F4F4F' strokeWidth='2px'/></div> }
       { messageToDisplay && (<div className='display-msg' onClick={OnDisplayMsgClick}>{messageToDisplay}</div>)}
+      <button className='debug-login-btn' onClick={()=>OnDebugLogin()}>DEBUG Login</button>
   </div>
   );
 }

@@ -1,0 +1,94 @@
+.biq-bb-tab-container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    height: calc(100vh - 80px);
+}
+
+/* For Webkit browsers like Chrome, Safari */
+.biq-bb-tab-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.biq-bb-tab-container::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+
+.biq-bb-tab-container::-webkit-scrollbar-thumb {
+    background: #888; 
+}
+
+.biq-bb-tab-container::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}
+
+/* For Firefox */
+.biq-bb-tab-container {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+
+.biq-bb-title-div {
+    display: flex;
+    padding: 5px 10px;
+    font-weight: 600;
+    background-color: #eee;
+}
+
+.biq-bb-content-div {
+    padding: 10px;
+    font-size: 15px;
+}
+
+.biq-bb-btns-div button {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    margin-left: 10px;
+    background-color: #dedede;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.biq-bb-btns-div button:hover {
+    background-color:#bbb;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);  /* This slightly raises the button on hover for a "lifting" effect */
+}
+
+.biq-bb-btns-div button:active {
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    transform: translateY(1px);  /* This slightly lowers the button on active click to give a "pressing" effect */
+}
+
+.biq-bb-billboard-types-div {
+    margin-top: 10px;
+}
+
+.billboard-type {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* This aligns items to the start of the flex container */
+    justify-content: flex-end; /* This pushes items to the end of the container */
+    overflow: hidden; 
+}
+
+.billboard-type img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This ensures the image covers the entire container */
+    flex-shrink: 0; /* This ensures the image doesn't shrink */
+    order: -1; /* This ensures the image is always first in the flex container */
+}
+
+.billboard-type div {
+    color: white;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.5); /* Gives the text a semi-transparent background for better readability */
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}

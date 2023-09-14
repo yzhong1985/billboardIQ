@@ -49,6 +49,8 @@ function MapComponent({ onLogout }) {
   const [resultBillboardLayers, setResultBillboardLayers] = useState([]);
   const [currentWorkspace, setCurrentWorkspace] = useState(null);
   const [isCandidateBBShow, setIsCandidateBBShow] = useState(false);
+  const [isCandidatesPixiBBShow, setIsCandidatesPixiBBShow] = useState(false);
+  const [isBillboardVisible, setBillboardVisible] = useState(false);
 
   /**
    * load workspace items
@@ -74,7 +76,6 @@ function MapComponent({ onLogout }) {
    * use current workspace to set map component
    */
   const setMapComponent = (wkspace) => {
-    
     const wspId = wkspace.id;
     if (currentWorkspace && currentWorkspace.id === wspId ) return;
 
@@ -96,7 +97,7 @@ function MapComponent({ onLogout }) {
   };
 
   /**
-   * load available billboard locations
+   * load available billboard locations (right now they are generated into a pixi layer)
    */
   const loadAvailableBillboards = async () => {
     try {
@@ -145,25 +146,6 @@ function MapComponent({ onLogout }) {
 
     setResultBillboardLayers((prevLayers) => [...prevLayers, billboardItems]);
     
-    /*
-    fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((parsedData) => {
-        //console.log(parsedData);
-        const billboards = JSON.parse(parsedData.billbards);
-        console.log(billboards);
-        setResultBillboardLayer(billboards);
-        console.log("set result layers ---");
-        console.log(resultBillboardLayer);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-      */
   };
 
   const MapEvents = () => {
@@ -184,64 +166,27 @@ function MapComponent({ onLogout }) {
   };
 
   const onToggleBillboards = () => {
-    //console.log("toggle.. billboard layer");
-    setIsCandidateBBShow(!isCandidateBBShow);
+    setBillboardVisible(prevState => !prevState);
   };
 
   useEffect(() => {
     loadWorkspaces();
+  }, []);
+
+  useEffect(() => {
     loadAvailableBillboards();
   }, []);
 
-  /*
-  useEffect(() => {
-    console.log("resultBillboardLayer -- ");
-    console.log(resultBillboardLayer);
-  }, [resultBillboardLayer]);
-  */
-
-  // test pixi
-  const markerCoords = [
-    [33.3432, -111.9717],
-    [33.434264, -111.905819],
-    [33.63834, -112.263031],
-    [33.396685, -111.968098]
-    // ... more coords
-  ];
-
   return (
     <div className="biq-map-container">
-      <Sidebar
-        onLogout={onLogout}
-        onSelectBillboards={getOptimalBillboards}
-        onTurnOffBillboards={onToggleBillboards}
-      />
-      <MapContainer
-        className="biq-map"
-        ref={mapRef}
-        center={mapCenter}
-        zoom={appConfig.DEF_ZOOM}
-        maxZoom={appConfig.DEF_MAX_ZOOM}
-        minZoom={appConfig.DEF_MIN_ZOOM}
-        zoomControl={false}
-      >
-        {/*<DemandHeatmap data={null} />*/}
-        {/*<AreaGrid topLeft={null} bottomRight={null} cellSize={null} />*/}
+      <Sidebar onLogout={onLogout} onSelectBillboards={getOptimalBillboards} onToggleBillboards={onToggleBillboards} />
+      <MapContainer className="biq-map" ref={mapRef} center={mapCenter} zoom={appConfig.DEF_ZOOM} 
+                    maxZoom={appConfig.DEF_MAX_ZOOM} minZoom={appConfig.DEF_MIN_ZOOM} zoomControl={false} >
         <MapEvents />
         <ZoomControl position="topright" />
-        <ChangeView center={mapCenter} />
-        {currentWorkspace && (
-          <TileLayer
-            url={currentWorkspace.basemapUrl}
-            attribution={currentWorkspace.basemapAttr}
-          />
-        )}
-        {isCandidateBBShow && billboardData && (
-          <BillboardLayer layerName={"l-candidate"} data={billboardData} />
-        )}
+        {currentWorkspace && ( <TileLayer url={currentWorkspace.basemapUrl} attribution={currentWorkspace.basemapAttr} />)}
         {resultBillboardLayers.map((layer, layerIdx) => (<BillboardResultLayer key={`l-${layerIdx}`} data={layer} />))}
-
-        <BillboardPixiLayer data={billboardData} />
+        <BillboardPixiLayer data={billboardData} isVisible={isBillboardVisible} />   
       </MapContainer>
     </div>
   );
@@ -253,3 +198,18 @@ export default MapComponent;
 /** {resultBillboardLayer && (
           <BillboardResultLayer data={resultBillboardLayer} />
         )} */
+
+/**
+ * {isCandidateBBShow && billboardData && (
+            <BillboardLayer layerName={"l-candidate"} data={billboardData} />
+        )}
+ * 
+ */
+/**
+* <ChangeView center={mapCenter} />
+*/
+
+///*<DemandHeatmap data={null} />*/}
+//{/*<AreaGrid topLeft={null} bottomRight={null} cellSize={null} />*/}
+
+        

@@ -24,9 +24,10 @@ async function loadSVGTexture(svgUrl) {
     });
 }
 
-function BillboardPixiLayer({ data }) {
+function BillboardPixiLayer({ data, isVisible }) {
     
     const [markerTexture, setMarkerTexture] = useState(null);
+
     const map = useMap();
 
     useEffect(() => {
@@ -43,8 +44,18 @@ function BillboardPixiLayer({ data }) {
 
         const pixiContainer = new PIXI.Container();
         data.forEach(point => {
+            //use svg icon as marker
             const marker = new PIXI.Sprite(markerTexture);
             marker.anchor.set(0.5, 1);
+
+            //const marker = new PIXI.Graphics();
+            // Define circle properties: color, line style, fill
+            //marker.beginFill(0xFF0000);  // color in hex format, this is red
+            //marker.drawCircle(0, 0, 2); // parameters are x, y, radius
+            //marker.endFill();
+            // Set anchor (for positioning)
+            //marker.pivot.set(0.5, 0.5); 
+
             pixiContainer.addChild(marker);
         });
 
@@ -56,7 +67,13 @@ function BillboardPixiLayer({ data }) {
             const container = utils.getContainer();
             const renderer = utils.getRenderer();
             const project = utils.latLngToLayerPoint;
-            const scale = utils.getScale();
+            let scale = utils.getScale();
+            
+            //display current zoom and scale
+            //console.log("zoom:");
+            //console.log(zoom);
+            //console.log("scale:");
+            //console.log(scale);
 
             data.forEach((point, index) => {
                 const marker = pixiContainer.children[index];
@@ -68,18 +85,29 @@ function BillboardPixiLayer({ data }) {
                 }
 
                 if (firstDraw || prevZoom !== zoom) {
+                    if (scale < 0.5) {
+                        scale = 0.5;
+                    }
                     marker.scale.set(1 / scale);
+                    //marker.scale.set(10 + zoom * 0.1);
                 }
             });
-
             firstDraw = false;
             prevZoom = zoom;
             renderer.render(container);
+        }, pixiContainer);
 
-        }, pixiContainer); 
-    
-        pixiOverlay.addTo(map);
-      }, [map, data]);
+        if (isVisible) {
+            pixiOverlay.addTo(map);
+        } else {
+            pixiOverlay.remove();
+        }
+
+        return () => {
+            pixiOverlay.remove();
+        };
+
+      }, [map, data, isVisible]);
 
     return <></>;
 }

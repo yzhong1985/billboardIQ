@@ -5,8 +5,9 @@ import { googleLogout } from '@react-oauth/google';
 
 import { AiOutlineMenu, AiFillDatabase, AiFillBulb, AiFillSignal, AiTwotoneSetting, AiOutlineCloseCircle } from 'react-icons/ai';
 import { IoLayersSharp } from "react-icons/io5";
+import "../styles/sidebar.css";
 
-function Sidebar({ onLogout, onSelectBillboards, onTurnOffBillboards }) {
+function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards }) {
     
     const [activeItem, setActiveItem] = useState(null);
     const [showCaseItems, setShowCaseItems] = useState(null);
@@ -30,7 +31,6 @@ function Sidebar({ onLogout, onSelectBillboards, onTurnOffBillboards }) {
             }
             setActiveItem(null);
         }
-        
     }
 
     const handleMenuClose = () => {
@@ -73,6 +73,7 @@ function Sidebar({ onLogout, onSelectBillboards, onTurnOffBillboards }) {
 
     const imgUrl1 = 'img/phoenix-bg-1-min.png'; // Replace with your image path
     const imgUrl2 = 'img/seattle-bg-1-min.png';
+
     const divStyle1 = {
         backgroundImage: `url(${imgUrl1})`,
         backgroundSize: 'cover',  // This will make sure the image covers the div
@@ -134,10 +135,8 @@ function Sidebar({ onLogout, onSelectBillboards, onTurnOffBillboards }) {
                     </div>
                     </div>
                     <div className={`item-content ${activeItem === 'billboards' ? 'active' : ''}`} id="billboards">
-                    <h2>Billboard Locations</h2>
-                    <div className="content">
-                        <BillboardLocationsPanel onToggleBillboard={onTurnOffBillboards} />
-                    </div>
+                    <h2>Billboards</h2>
+                    <BillboardLocationsPanel onToggleBillboards={onToggleBillboards} />
                     </div>
                     <div className={`item-content ${activeItem === 'params' ? 'active' : ''}`} id="params">
                     <h2>Set Parameters</h2>

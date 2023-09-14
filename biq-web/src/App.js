@@ -9,6 +9,12 @@ function App() {
 
   const [user, setUser] = React.useState(JSON.parse(sessionStorage.getItem('userdata')) || null);
 
+  const onDebugLogin = () => {
+      const debugUser = '{"userid":"64d305091373b1e917975134"}';
+      sessionStorage.setItem('userdata', debugUser);
+      setUser(debugUser);
+  };
+
   const onLogin = async (response) => {
     const id_token = response.credential;
     try {
@@ -24,6 +30,8 @@ function App() {
         throw new Error('Network response was not ok');
       }
       const data = await result.json();
+      console.log("user data is:");
+      console.log(JSON.stringify(data));
       sessionStorage.setItem('userdata', JSON.stringify(data));
       setUser(JSON.stringify(data));
 
@@ -49,7 +57,7 @@ function App() {
         </Helmet>
       </HelmetProvider>
       <Routes>
-        <Route path="/login" element={user ? <Navigate to="/main" /> : <LoginPage onLogin={onLogin} />} />
+        <Route path="/login" element={user ? <Navigate to="/main" /> : <LoginPage onLogin={onLogin} onDebugLogin={onDebugLogin}/>} />
         <Route path="/main" element={user ? <MainPage onLogout={onLogout} /> : <Navigate to="/login" />} />
         <Route path="*" element={<Navigate to={user ? "/main" : "/login"} />} />
       </Routes>
