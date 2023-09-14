@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { BiShow } from "react-icons/bi";
+import { FaMapMarker } from "react-icons/fa";
+
 
 function BillboardLocationsPanel({ onToggleBillboards }) {
 
@@ -27,19 +29,19 @@ function BillboardLocationsPanel({ onToggleBillboards }) {
           <div className='biq-bb-billboard-types-div'>
             <div className='billboard-type'>
               <img src='../img/digital_billboads.png' alt="Digital billboards"></img>
-              <div>Digital billboards</div>
+              <div><span className='text-color-yellow'>■</span>&nbsp;Digital billboards</div>
             </div>
             <div className='billboard-type'>
               <img src='../img/bulletin_billboards.png' alt="Bulletin billboards"></img>
-              <div>Bulletin billboards</div>
+              <div><span className='text-color-red'>■</span>&nbsp;Bulletin billboards</div>
             </div>
             <div className='billboard-type'>
               <img src='../img/shelter_billboards.png' alt="Shelter billboards"></img>
-              <div>Shelter billboards</div>
+              <div><span className='text-color-green'>■</span>&nbsp;Shelter billboards</div>
             </div>
             <div className='billboard-type'>
               <img src='../img/bench_billboards.png' alt="Bench billboards"></img>
-              <div>Bench billboards</div>
+              <div><span className='text-color-blue'>■</span>&nbsp;Bench billboards</div>
             </div>
           </div>
           <div className='biq-bb-content-div'>{SummaryContent}</div>

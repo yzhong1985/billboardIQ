@@ -169,6 +169,18 @@ function MapComponent({ onLogout }) {
     setBillboardVisible(prevState => !prevState);
   };
 
+  const onBillboardMarkerClick = (content) => {
+    const popupDiv = document.getElementById('popup-content');
+    const overlayDiv = document.querySelector('.map-overlay');
+    popupDiv.innerHTML = content;
+    overlayDiv.style.display = 'block'; // Show the overlay (and thus the popup)
+}
+
+  const closeFixedPopup = () => {
+    const overlayDiv = document.querySelector('.map-overlay');
+    overlayDiv.style.display = 'none'; // Hide the overlay (and the popup)
+  }
+
   useEffect(() => {
     loadWorkspaces();
   }, []);
@@ -186,8 +198,16 @@ function MapComponent({ onLogout }) {
         <ZoomControl position="topright" />
         {currentWorkspace && ( <TileLayer url={currentWorkspace.basemapUrl} attribution={currentWorkspace.basemapAttr} />)}
         {resultBillboardLayers.map((layer, layerIdx) => (<BillboardResultLayer key={`l-${layerIdx}`} data={layer} />))}
-        <BillboardPixiLayer data={billboardData} isVisible={isBillboardVisible} />   
+        <BillboardPixiLayer data={billboardData} isVisible={isBillboardVisible} onMarkerClick={onBillboardMarkerClick}/>   
       </MapContainer>
+
+      <div className="map-overlay">
+        <div id="fixed-popup" className="fixed-popup">
+            <div id="popup-content"></div>
+            <button onClick={closeFixedPopup}>Close</button>
+        </div>
+    </div>
+
     </div>
   );
 }

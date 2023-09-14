@@ -5,8 +5,10 @@ import * as PIXI from 'pixi.js';
 import 'leaflet-pixi-overlay';
 import L from 'leaflet';
 
-import markerIconSVG from '../styles/marker_reg_pixi.svg';
-
+import markerIconBlue from '../styles/markers/marker_blue.svg';
+import markerIconGreen from '../styles/markers/marker_green.svg';
+import markerIconRed from '../styles/markers/marker_red.svg';
+import markerIconYellow from '../styles/markers/marker_yellow.svg';
 
 async function loadSVGTexture(svgUrl) {
     return new Promise((resolve, reject) => {
@@ -24,17 +26,27 @@ async function loadSVGTexture(svgUrl) {
     });
 }
 
-function BillboardPixiLayer({ data, isVisible }) {
-    
-    const [markerTexture, setMarkerTexture] = useState(null);
+function BillboardPixiLayer({ data, isVisible, onMarkerClick }) {
 
+    const [markers, setMarkers] = useState([]);
     const map = useMap();
+
+    const showMarkerPopup = (content) => {
+        onMarkerClick(content);
+        //console.log();
+    }
 
     useEffect(() => {
         (async () => {
             //const texture = await PIXI.Assets.load(markerIcon);
-            const texture = await loadSVGTexture(markerIconSVG);
-            setMarkerTexture(texture);
+            //const texture = await loadSVGTexture(markerIconSVG);
+            //setMarkerTexture(texture);
+            const iconBlue = await loadSVGTexture(markerIconBlue);
+            const iconGreen = await loadSVGTexture(markerIconGreen);
+            const iconRed = await loadSVGTexture(markerIconRed);
+            const iconYellow = await loadSVGTexture(markerIconYellow);
+            // 0: blue 1:green 2:red 3:yellow
+            setMarkers([iconBlue, iconGreen, iconRed, iconYellow]);
         })();
     }, []);
 
@@ -43,10 +55,34 @@ function BillboardPixiLayer({ data, isVisible }) {
         if(!data) return;
 
         const pixiContainer = new PIXI.Container();
+
         data.forEach(point => {
+            const bbType = point.properties.productTyp;
+            let markerIndex = 0;
+            if (bbType === 'SHELTERS') { //green
+                markerIndex = 1;
+            } 
+            else if (bbType === 'BULLETINS') { //red
+                markerIndex = 2;
+            }
+            else if (bbType === 'Digital') { //yellow
+                markerIndex = 3;
+            } 
+            else { //bbType === 'BENCHES' //blue
+                markerIndex = 0;
+            }
+
             //use svg icon as marker
-            const marker = new PIXI.Sprite(markerTexture);
+            //const marker = new PIXI.Sprite(markerTexture);
+            const marker = new PIXI.Sprite(markers[markerIndex]);
             marker.anchor.set(0.5, 1);
+            
+            marker.interactive = true;
+            marker.buttonMode = true;
+            marker.on('click', (event) => {
+                const [longitude, latitude] = point.geometry.coordinates;
+                showMarkerPopup(`Coordinates: [${latitude}, ${longitude}]`);
+            });
 
             //const marker = new PIXI.Graphics();
             // Define circle properties: color, line style, fill

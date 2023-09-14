@@ -41,26 +41,6 @@ svg:not(:root) {
   width: 100%;
 }
 
-@media (min-width: 768px) {
-  .sidebar {
-    top: 10px;
-    left: 10px;
-    height: calc(100% - 20px);
-    border: 2px solid rgba(0, 0, 0, 0.2);
-    transition: width 500ms;
-  }
-
-  .leaflet-left {
-    transform: translateX(55px);
-  }
-
-  .active-sidebar .sidebar {
-    max-width: 480px;
-    width: 100%;
-    transition: width 1s;
-  }
-}
-
 .close-button {
   cursor: pointer;
   position: absolute;
@@ -305,3 +285,50 @@ svg:not(:root) {
   margin-top: 30px;
   padding: 10px;
 }
+
+.map-overlay {
+  position: absolute;  /* Positioned relative to the map container */
+  top: 0;
+  right: 0;  /* Adjust if you want some margin */
+  width: 300px;  /* Adjust based on your requirement */
+  height: auto;  /* Let it adjust to the content size */
+  display: none;  /* Initially hidden */
+  z-index: 1000;  /* High z-index to ensure overlay appears on top */
+}
+
+.fixed-popup {
+  width: 100%;  /* Take the full width of the overlay */
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+}
+
+
+@media (min-width: 500px) {
+  .sidebar {
+    top: 10px;
+    left: 10px;
+    height: calc(100% - 20px);
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    transition: width 500ms;
+  }
+
+  .leaflet-left {
+    transform: translateX(55px);
+  }
+
+  .active-sidebar .sidebar {
+    max-width: 320px;
+    width: 100%;
+    transition: width 1s;
+  }
+}
+
+@media (min-width: 991px) {
+
+  .active-sidebar .sidebar {
+    max-width: 480px;
+  }
+}
+

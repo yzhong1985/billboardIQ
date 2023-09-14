@@ -91,4 +91,22 @@
     padding: 10px;
     width: 100%;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+.text-color-yellow {
+    color: #F4B400;
+}
+
+.text-color-red {
+    color: #DB4437;
+}
+
+.text-color-blue {
+    color: #4285F4;
+}
+
+.text-color-green {
+    color: #0F9D58;
 }
