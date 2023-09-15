@@ -7,7 +7,7 @@ import { AiOutlineMenu, AiFillDatabase, AiFillBulb, AiFillSignal, AiTwotoneSetti
 import { IoLayersSharp } from "react-icons/io5";
 import "../styles/sidebar.css";
 
-function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards }) {
+function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards, onDebugToggle }) {
     
     const [activeItem, setActiveItem] = useState(null);
     const [showCaseItems, setShowCaseItems] = useState(null);
@@ -15,6 +15,9 @@ function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards }) {
     useEffect(() => {
     }, []);
 
+    const debugToggleResultPixiLayer = () => {
+        onDebugToggle();
+    };
 
     const handleItemClick = (item) => {
         //clicked when nothing is highlighted
@@ -31,20 +34,20 @@ function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards }) {
             }
             setActiveItem(null);
         }
-    }
+    };
 
     const handleMenuClose = () => {
         if (document.body.classList.contains("active-sidebar")) {
             document.body.classList.remove("active-sidebar");
         }
         setActiveItem(null);
-    }
+    };
 
     const handleLogout = () => {
         handleMenuClose();
         googleLogout();
         onLogout();
-    }
+    };
 
     const fetchData = async () => {
         try {
@@ -134,16 +137,17 @@ function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards }) {
                         
                     </div>
                     </div>
+
                     <div className={`item-content ${activeItem === 'billboards' ? 'active' : ''}`} id="billboards">
-                    <h2>Billboards</h2>
-                    <BillboardLocationsPanel onToggleBillboards={onToggleBillboards} />
+                        <h2>Billboards</h2>
+                        <BillboardLocationsPanel onToggleBillboards={onToggleBillboards} />
                     </div>
+
                     <div className={`item-content ${activeItem === 'params' ? 'active' : ''}`} id="params">
-                    <h2>Set Parameters</h2>
-                    <div className="content">
+                        <h2>Optimal Advertising</h2>
                         <BillboardSettingsPanel onSelectBillboards={onSelectBillboards} />
                     </div>
-                    </div>
+
                     <div className={`item-content ${activeItem === 'layers' ? 'active' : ''}`} id="layers">
                     <h2>Layers</h2>
                     <div className="content">
@@ -158,6 +162,8 @@ function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards }) {
                         <button onClick={fetchData}>GET request</button>
 
                         <button onClick={postData}>Send User Data (POST)</button>
+
+                        <button onClick={debugToggleResultPixiLayer}>Toggle Result pixi Layer</button>
                     </div>
                         
                     </div>

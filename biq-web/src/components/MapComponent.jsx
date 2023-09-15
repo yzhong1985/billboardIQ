@@ -20,6 +20,8 @@ import WorkspaceModel from "../models/workspace";
 
 import BillboardPixiLayer from "./BillboardPixiLayer";
 
+import BillboardPixiResultLayer from "./BillboardPixiResultLayer";
+
 
 import "leaflet/dist/leaflet.css";
 import "../styles/main.css";
@@ -51,6 +53,8 @@ function MapComponent({ onLogout }) {
   const [isCandidateBBShow, setIsCandidateBBShow] = useState(false);
   const [isCandidatesPixiBBShow, setIsCandidatesPixiBBShow] = useState(false);
   const [isBillboardVisible, setBillboardVisible] = useState(false);
+
+  const [isResultLayerVisible, setIsResultLayerVisible] = useState(false);
 
   /**
    * load workspace items
@@ -181,6 +185,19 @@ function MapComponent({ onLogout }) {
     overlayDiv.style.display = 'none'; // Hide the overlay (and the popup)
   }
 
+  const Debug_GET_15_Data = () => {
+    let bb_sample_indexes = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 131, 142, 153];
+    if (billboardData && billboardData.length >=15 ){
+      return bb_sample_indexes.map(index => billboardData[index]);
+    } else {
+      return [];
+    }
+  }
+
+  const Debug_togglePixiResultLayer = () => {
+    setIsResultLayerVisible(prevState => !prevState);
+  };
+
   useEffect(() => {
     loadWorkspaces();
   }, []);
@@ -191,14 +208,17 @@ function MapComponent({ onLogout }) {
 
   return (
     <div className="biq-map-container">
-      <Sidebar onLogout={onLogout} onSelectBillboards={getOptimalBillboards} onToggleBillboards={onToggleBillboards} />
+      <Sidebar onLogout={onLogout} onSelectBillboards={getOptimalBillboards} onToggleBillboards={onToggleBillboards} onDebugToggle={Debug_togglePixiResultLayer}/>
       <MapContainer className="biq-map" ref={mapRef} center={mapCenter} zoom={appConfig.DEF_ZOOM} 
                     maxZoom={appConfig.DEF_MAX_ZOOM} minZoom={appConfig.DEF_MIN_ZOOM} zoomControl={false} >
         <MapEvents />
         <ZoomControl position="topright" />
         {currentWorkspace && ( <TileLayer url={currentWorkspace.basemapUrl} attribution={currentWorkspace.basemapAttr} />)}
         {resultBillboardLayers.map((layer, layerIdx) => (<BillboardResultLayer key={`l-${layerIdx}`} data={layer} />))}
-        <BillboardPixiLayer data={billboardData} isVisible={isBillboardVisible} onMarkerClick={onBillboardMarkerClick}/>   
+        <BillboardPixiLayer data={billboardData} isVisible={isBillboardVisible} onMarkerClick={onBillboardMarkerClick}/>
+
+        <BillboardPixiResultLayer data={Debug_GET_15_Data()} isVisible={isResultLayerVisible} />
+
       </MapContainer>
 
       <div className="map-overlay">

@@ -33,14 +33,26 @@ function BillboardPixiLayer({ data, isVisible, onMarkerClick }) {
 
     const showMarkerPopup = (content) => {
         onMarkerClick(content);
-        //console.log();
     }
 
+    const getIconIndex = (bbType) => {
+        if (bbType === 'SHELTERS') { //green
+            return 1;
+        } 
+        else if (bbType === 'BULLETINS') { //red
+            return 2;
+        }
+        else if (bbType === 'Digital') { //yellow
+            return 3;
+        } 
+        else { //bbType === 'BENCHES' //blue
+            return 0;
+        }         
+    }
+
+    /** load marker icons for billboards */
     useEffect(() => {
         (async () => {
-            //const texture = await PIXI.Assets.load(markerIcon);
-            //const texture = await loadSVGTexture(markerIconSVG);
-            //setMarkerTexture(texture);
             const iconBlue = await loadSVGTexture(markerIconBlue);
             const iconGreen = await loadSVGTexture(markerIconGreen);
             const iconRed = await loadSVGTexture(markerIconRed);
@@ -58,39 +70,16 @@ function BillboardPixiLayer({ data, isVisible, onMarkerClick }) {
 
         data.forEach(point => {
             const bbType = point.properties.productTyp;
-            let markerIndex = 0;
-            if (bbType === 'SHELTERS') { //green
-                markerIndex = 1;
-            } 
-            else if (bbType === 'BULLETINS') { //red
-                markerIndex = 2;
-            }
-            else if (bbType === 'Digital') { //yellow
-                markerIndex = 3;
-            } 
-            else { //bbType === 'BENCHES' //blue
-                markerIndex = 0;
-            }
-
+            const markerIndex = getIconIndex(bbType);
             //use svg icon as marker
-            //const marker = new PIXI.Sprite(markerTexture);
             const marker = new PIXI.Sprite(markers[markerIndex]);
             marker.anchor.set(0.5, 1);
-            
             marker.interactive = true;
             marker.buttonMode = true;
             marker.on('click', (event) => {
                 const [longitude, latitude] = point.geometry.coordinates;
                 showMarkerPopup(`Coordinates: [${latitude}, ${longitude}]`);
             });
-
-            //const marker = new PIXI.Graphics();
-            // Define circle properties: color, line style, fill
-            //marker.beginFill(0xFF0000);  // color in hex format, this is red
-            //marker.drawCircle(0, 0, 2); // parameters are x, y, radius
-            //marker.endFill();
-            // Set anchor (for positioning)
-            //marker.pivot.set(0.5, 0.5); 
 
             pixiContainer.addChild(marker);
         });
@@ -149,3 +138,12 @@ function BillboardPixiLayer({ data, isVisible, onMarkerClick }) {
 }
 
 export default BillboardPixiLayer;
+
+/* Code for drawing circles - in  */
+//const marker = new PIXI.Graphics();
+// Define circle properties: color, line style, fill
+//marker.beginFill(0xFF0000);  // color in hex format, this is red
+//marker.drawCircle(0, 0, 2); // parameters are x, y, radius
+//marker.endFill();
+// Set anchor (for positioning)
+//marker.pivot.set(0.5, 0.5); 

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, Fragment  } from 'react';
 import { LayerGroup, CircleMarker, Popup, Marker, Circle  } from 'react-leaflet';
 import Cluster from 'react-leaflet-cluster'
 import L from 'leaflet';
-import BillboardInfoBox from './BillboardInfoBox';
 
 /**
  * this component is to represent a layer of billboards, 

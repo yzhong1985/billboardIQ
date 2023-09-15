@@ -1,3 +1,4 @@
+
 .biq-bb-tab-container {
     display: flex;
     flex-direction: column;
@@ -41,7 +42,7 @@
     font-size: 15px;
 }
 
-.biq-bb-btns-div button {
+.biq-bb-btns-div button, .biq-bb-btn {
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -53,10 +54,11 @@
     transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-.biq-bb-btns-div button:hover {
+.biq-bb-btns-div button:hover{
     background-color:#bbb;
+    font-weight: 600;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    transform: translateY(-3px);  /* This slightly raises the button on hover for a "lifting" effect */
+    transform: translateY(2px);  /* This slightly raises the button on hover for a "lifting" effect */
 }
 
 .biq-bb-btns-div button:active {
@@ -109,4 +111,67 @@
 
 .text-color-green {
     color: #0F9D58;
+}
+
+.biq-bb-input-div {
+    display: flex;
+    padding: 5px 10px;
+    font-size: 15px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.biq-bb-input-title {
+    width: 40%;
+}
+
+.biq-bb-input-div select, .biq-bb-input-div input {
+    width: 50%;
+    padding: 5px;
+}
+
+.biq-link-btn {
+    border: none;
+    color: #4285F4;
+    padding: 10px 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    background: transparent;
+}
+
+.biq-bb-bottom-div {
+    display: flex;
+    justify-content: end;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.biq-bb-reset-btn {
+    background: #DB4437;
+    color: #fff;
+}
+
+.biq-bb-calc-btn {
+    background:#4285F4;
+    color: #fff;
+}
+
+.biq-bb-btn:hover {
+    font-weight: 600;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(2px);  /* This slightly raises the button on hover for a "lifting" effect */
+}
+
+.biq-bb-group-div {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 5px 10px;
+    background: #fafafa;
+
+}
+
+.biq-content-align-end {
+    justify-content: flex-end;
 }
