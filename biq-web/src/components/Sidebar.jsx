@@ -7,17 +7,13 @@ import { AiOutlineMenu, AiFillDatabase, AiFillBulb, AiFillSignal, AiTwotoneSetti
 import { IoLayersSharp } from "react-icons/io5";
 import "../styles/sidebar.css";
 
-function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards, onDebugToggle }) {
+function Sidebar({ onLogout, onCalBillboardLocations, onToggleBillboards }) {
     
     const [activeItem, setActiveItem] = useState(null);
     const [showCaseItems, setShowCaseItems] = useState(null);
 
     useEffect(() => {
     }, []);
-
-    const debugToggleResultPixiLayer = () => {
-        onDebugToggle();
-    };
 
     const handleItemClick = (item) => {
         //clicked when nothing is highlighted
@@ -145,7 +141,7 @@ function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards, onDebugTogg
 
                     <div className={`item-content ${activeItem === 'params' ? 'active' : ''}`} id="params">
                         <h2>Optimal Advertising</h2>
-                        <BillboardSettingsPanel onSelectBillboards={onSelectBillboards} />
+                        <BillboardSettingsPanel onCalBillboardLocations={onCalBillboardLocations} />
                     </div>
 
                     <div className={`item-content ${activeItem === 'layers' ? 'active' : ''}`} id="layers">
@@ -163,7 +159,6 @@ function Sidebar({ onLogout, onSelectBillboards, onToggleBillboards, onDebugTogg
 
                         <button onClick={postData}>Send User Data (POST)</button>
 
-                        <button onClick={debugToggleResultPixiLayer}>Toggle Result pixi Layer</button>
                     </div>
                         
                     </div>

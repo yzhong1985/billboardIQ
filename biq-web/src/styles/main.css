@@ -302,12 +302,42 @@ svg:not(:root) {
 
 .fixed-popup {
   width: 100%;  /* Take the full width of the overlay */
-  background-color: white;
+  background-color: #FFFFED;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
+.bb-content-item {
+  width: 99%;
+  display: flex;
+  margin-top: 5px;
+}
+
+.bb-content-item img {
+  width: 100%;
+}
+
+.bb-content-title {
+  width: 40%;
+  max-width: 100px;
+}
+
+.bb-content-txt {
+  font-weight: 600;
+  margin-left: 10px;
+  width: 59%;
+}
+
+.bb-content-btn {
+  justify-content: end;
+}
+
+.bb-content-btn button {
+  padding: 5px 10px;
+}
 
 @media (min-width: 500px) {
   .sidebar {

@@ -5,34 +5,60 @@ import * as PIXI from 'pixi.js';
 import 'leaflet-pixi-overlay';
 import L from 'leaflet';
 
+import { loadSVGTexture } from './UserBillboardContext';
+
 import markerIconBlue from '../styles/markers/marker_blue.svg';
 import markerIconGreen from '../styles/markers/marker_green.svg';
 import markerIconRed from '../styles/markers/marker_red.svg';
 import markerIconYellow from '../styles/markers/marker_yellow.svg';
 
-async function loadSVGTexture(svgUrl) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            resolve(PIXI.Texture.from(canvas));
-        };
-        img.onerror = reject;
-        img.src = svgUrl;
-    });
-}
-
-function BillboardPixiLayer({ data, isVisible, onMarkerClick }) {
+function BillboardPixiLayer({ data, isVisible }) {
 
     const [markers, setMarkers] = useState([]);
     const map = useMap();
 
-    const showMarkerPopup = (content) => {
-        onMarkerClick(content);
+    const onMarkerClick = (point) => {
+        //console.log(point);
+        const bbId = point.id ? point.id: 0;
+        const bbType = point.properties.productTyp ? point.properties.productTyp : "N/A";
+        const estWeeklyImpression = point.properties.weeklyImpr ? point.properties.weeklyImpr : 0;
+        const bbLocation = point.properties.hoverText ? point.properties.hoverText : "N/A";
+        const bbHeading = point.properties.heading ? point.properties.heading : "N/A";
+        const [longitude, latitude] = point.geometry.coordinates ? point.geometry.coordinates : [0, 0];
+        const locDiv = document.getElementById('bb-popup-div-loc');
+        locDiv.innerHTML = bbLocation;
+        const coordsDiv = document.getElementById('bb-popup-div-coords');
+        coordsDiv.innerHTML = `[${latitude}, ${longitude}]`;
+        const typeDiv = document.getElementById('bb-popup-div-type');
+        typeDiv.innerHTML = bbType;
+        const typeImg = document.getElementById('bb-popup-img-type');
+        let typeSrc = "";
+        switch (bbType) 
+        {
+            case "SHELTERS":
+                typeSrc = "../img/shelter_billboards.png";
+                break;
+            case "BENCHES":
+                typeSrc = "../img/bench_billboards.png";
+                break;
+            case "BULLETINS":
+                typeSrc = "../img/bulletin_billboards.png";
+                break;
+            case "Digital":
+                typeSrc = "../img/digital_billboads.png";
+                break;
+            default:
+                typeSrc = "../img/shelter_billboards.png";
+        }
+        typeImg.src = typeSrc;
+        const idDiv = document.getElementById('bb-popup-div-id');
+        idDiv.innerHTML = bbId;
+        const headingDiv = document.getElementById('bb-popup-div-heading');
+        headingDiv.innerHTML = bbHeading;
+        const numImpressionDiv = document.getElementById('bb-popup-div-impr');
+        numImpressionDiv.innerHTML = estWeeklyImpression;
+        const overlayDiv = document.querySelector('.map-overlay');
+        overlayDiv.style.display = 'block'; 
     }
 
     const getIconIndex = (bbType) => {
@@ -48,6 +74,11 @@ function BillboardPixiLayer({ data, isVisible, onMarkerClick }) {
         else { //bbType === 'BENCHES' //blue
             return 0;
         }         
+    }
+
+    const closeFixedPopup = () => {
+        const overlayDiv = document.querySelector('.map-overlay');
+        overlayDiv.style.display = 'none'; // Hide the overlay (and the popup)
     }
 
     /** load marker icons for billboards */
@@ -78,7 +109,8 @@ function BillboardPixiLayer({ data, isVisible, onMarkerClick }) {
             marker.buttonMode = true;
             marker.on('click', (event) => {
                 const [longitude, latitude] = point.geometry.coordinates;
-                showMarkerPopup(`Coordinates: [${latitude}, ${longitude}]`);
+                //showMarkerPopup(`Coordinates: [${latitude}, ${longitude}]`);
+                onMarkerClick(point);
             });
 
             pixiContainer.addChild(marker);
@@ -132,9 +164,44 @@ function BillboardPixiLayer({ data, isVisible, onMarkerClick }) {
             pixiOverlay.remove();
         };
 
-      }, [map, data, isVisible]);
+    }, [map, data, isVisible]);
 
-    return <></>;
+    return <>
+            <div className="map-overlay">
+                <div id="fixed-popup" className="fixed-popup">
+                    <div className='bb-content-item'>
+                        <img id="bb-popup-img-type" src="../img/shelter_billboards.png" alt="Shelter billboards" />
+                    </div>
+                    <div className='bb-content-item'>
+                        <div className='bb-content-title'>Type:</div>
+                        <div id="bb-popup-div-type" className='bb-content-txt'></div>
+                    </div>
+                    <div className='bb-content-item'>
+                        <div className='bb-content-title'>Locate at:</div>
+                        <div id="bb-popup-div-loc" className='bb-content-txt'></div>
+                    </div>
+                    <div className='bb-content-item'>
+                        <div className='bb-content-title'>Coordinates:</div>
+                        <div id="bb-popup-div-coords" className='bb-content-txt'></div>
+                    </div>
+                    <div className='bb-content-item'>
+                        <div className='bb-content-title'>ID:</div>
+                        <div id="bb-popup-div-id" className='bb-content-txt'></div>
+                    </div>
+                    <div className='bb-content-item'>
+                        <div className='bb-content-title'>Heading:</div>
+                        <div id="bb-popup-div-heading" className='bb-content-txt'></div>
+                    </div>
+                    <div className='bb-content-item'>
+                        <div className='bb-content-title'>Impression Est.:</div>
+                        <div id="bb-popup-div-impr" className='bb-content-txt'></div>
+                    </div>
+                    <div className='bb-content-item bb-content-btn'>
+                        <button onClick={closeFixedPopup}>Close</button>
+                    </div>
+                </div>
+            </div>
+            </>;
 }
 
 export default BillboardPixiLayer;

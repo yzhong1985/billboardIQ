@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BiShow } from "react-icons/bi";
 
-function BillboardSettingsPanel({onSelectBillboards}) {
+function BillboardSettingsPanel({onCalBillboardLocations}) {
     
   const IntroContent = "BIQ is designed to identify the most prime billboard locations for your outdoor advertising campaigns. " + 
                         "Our decision-making process is based on: Estimation of Views, Billboard Influence Radius, " + 
@@ -21,28 +21,32 @@ function BillboardSettingsPanel({onSelectBillboards}) {
   const [isUniversalBBRadius, setIsUniversalBBRadius] = useState(true);
   const [isShowAdvanceOptions, setIsShowAdvanceOptions] = useState(false);
 
-  const toggleSetBillboardRadiusType = () => {
-    setIsUniversalBBRadius(prevState => !prevState);
-  };
-
-  const renderBillboardTypeToggleBtnText = () => {
+  const getBBTypeToggleBtnText = () => {
     if (isUniversalBBRadius) {
       return "Set Radius by Billboard Types";
     } else {
       return "Set Universal Infulence Radius";
     }
-  }
+  };
 
-  const toggleAdvanceOptionsDisplay = () => {
+  const switchSetBBRadiusType = () => {
+    setIsUniversalBBRadius(prevState => !prevState);
+  };
+
+  const switchAdvOptsDisplay = () => {
     setIsShowAdvanceOptions(prevState => !prevState);
   };
 
-  const onSubmitClick = () => {
+  const onCalculateBtnClick = () => {
     const params = {
-      name: "user",
-      address: "123 Main St.",
+      industry: marketingIndustryType,
+      demandQunt: demandQuantifer,
+      nBillboards: numberOfBillboards,
+      influentR: radius,
+      moBudget: budget,
+      solver: solver
     };
-    onSelectBillboards(params);
+    onCalBillboardLocations(params);
   };
 
   return (
@@ -80,7 +84,7 @@ function BillboardSettingsPanel({onSelectBillboards}) {
       {/** Set billboard infulence by type */}
       <div className='biq-bb-input-div'>
         <div className='biq-bb-input-title'></div>
-        <button className='biq-link-btn' onClick={(e) => toggleSetBillboardRadiusType()}>{renderBillboardTypeToggleBtnText()}</button>
+        <button className='biq-link-btn' onClick={(e) => switchSetBBRadiusType()}>{getBBTypeToggleBtnText()}</button>
       </div>
       {/** Set billboard infulence radius - universal */}
       { isUniversalBBRadius && 
@@ -116,19 +120,19 @@ function BillboardSettingsPanel({onSelectBillboards}) {
       
       <div className='biq-bb-input-div'>
         <div className='biq-bb-input-title'></div>
-        <button className='biq-link-btn' onClick={(e) => toggleAdvanceOptionsDisplay()}>{isShowAdvanceOptions ? "Hide Advanced Options" : "Show Advanced Options"}</button>
+        <button className='biq-link-btn' onClick={(e) => switchAdvOptsDisplay()}>{isShowAdvanceOptions ? "Hide Advanced Options" : "Show Advanced Options"}</button>
       </div>
       { isShowAdvanceOptions && 
       <>
         <div className='biq-bb-input-div'>
           <div className='biq-bb-input-title'>{"MIP Solver Options"}</div>
           <select className='biq-bb-select' value={solver} onChange={(e) => setSolver(e.target.value)}>
-            <option value="gurobi">{"Gurobi"}</option>
-            <option value="cplex">{"IBM Cplex"}</option>
-            <option value="ortools">{"Google Ortools (free)"}</option>
-            <option value="ga">{"Heuristic - Genetic Algorithm (free)"}</option>
-            <option value="gdy">{"Heuristic - Greedy Algorithm (free)"}</option>
-            <option value="sa">{"Heuristic - Simulated Annealing (free)"}</option>
+            <option value="solver.sp_gurobi">{"Gurobi"}</option>
+            <option value="solver.sp_cplex">{"IBM Cplex"}</option>
+            <option value="solver.sp_ortools">{"Google Ortools (free)"}</option>
+            <option value="heuristic.sp_ga">{"Heuristic - Genetic Algorithm (free)"}</option>
+            <option value="heuristic.sp_greedy">{"Heuristic - Greedy Algorithm (free)"}</option>
+            <option value="heuristic.sp_sa">{"Heuristic - Simulated Annealing (free)"}</option>
           </select>
         </div>
       </> }
@@ -136,7 +140,7 @@ function BillboardSettingsPanel({onSelectBillboards}) {
       {/** Operation buttons */}
       <div className='biq-bb-bottom-div'>
         <button className='biq-bb-btn biq-bb-reset-btn'>Reset</button>
-        <button className='biq-bb-btn biq-bb-calc-btn'>Calculate</button>
+        <button className='biq-bb-btn biq-bb-calc-btn' onClick={(e) => onCalculateBtnClick()}>Calculate</button>
       </div>
       <button className='biq-link-btn'>Show/Hide Current Results</button>
     
